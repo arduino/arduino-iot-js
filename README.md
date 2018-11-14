@@ -1,4 +1,5 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![npm version](https://badge.fury.io/js/arduino-iot-js.svg)](https://badge.fury.io/js/arduino-iot-js)
 
 # arduino-iot-js
 
@@ -7,7 +8,7 @@ JS module providing interaction with Arduino Cloud
 ## Installation
 
 ```bash
-$ npm install git+ssh://git@github.com/arduino/arduino-iot-js.git
+$ npm install arduino-iot-js
 ```
 
 ## How to use
@@ -75,7 +76,7 @@ ArduinoCloud.onPropertyValue(connectionId, deviceId, propertyName, updateCb).the
 ## Run tests
 First of all you need a valid Hydra Arduino token, you can get it from [Create Cloud Dev](https://create-dev.arduino.cc/cloud/)
 
-After you can use this token to run tests
+Then you can use this token to run tests
 
 ```bash
 $ TOKEN=YOUR_HYDRA_TOKEN_HERE npm run test
