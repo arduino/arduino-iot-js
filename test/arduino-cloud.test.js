@@ -65,36 +65,36 @@ it('Property name must be a string in sendProperty', (done) => {
   }
 });
 
-it('Simulate client write to serial monitor', (done) => {
-  ArduinoCloud.writeCloudSerialMonitor(connectionId, deviceId, `this is a test ${Math.random()}`).then(() => {
+it('Simulate client write to cloud monitor', (done) => {
+  ArduinoCloud.writeCloudMonitor(connectionId, deviceId, `this is a test ${Math.random()}`).then(() => {
     done();
   }, (error) => {
     throw new Error(error);
   });
 });
 
-it('Simulate device write to serial monitor', (done) => {
-  const cloudSerialInputTopic = `/a/d/${deviceId}/s/o`;
-  ArduinoCloud.sendMessage(connectionId, cloudSerialInputTopic, `this is a test ${Math.random()}`).then(() => {
+it('Simulate device write to cloud monitor', (done) => {
+  const cloudMonitorInputTopic = `/a/d/${deviceId}/s/o`;
+  ArduinoCloud.sendMessage(connectionId, cloudMonitorInputTopic, `this is a test ${Math.random()}`).then(() => {
     done();
   }, (error) => {
     throw new Error(error);
   });
 });
 
-it('Simulate device write and client read his message from serial monitor', (done) => {
-  const cloudSerialInputTopic = `/a/d/${deviceId}/s/o`;
+it('Simulate device write and client read his message from cloud monitor', (done) => {
+  const cloudMonitorInputTopic = `/a/d/${deviceId}/s/o`;
 
   const cb = () => {
-    // console.log(`[${new Date()}] Message from serial: ${message}`);
+    // console.log(`[${new Date()}] Message from monitor: ${message}`);
     done();
   };
 
-  ArduinoCloud.openCloudSerialMonitor(connectionId, deviceId, cb).then(() => {
+  ArduinoCloud.openCloudMonitor(connectionId, deviceId, cb).then(() => {
     // console.log(`Subscribed to topic: ${topic}`);
     const message = `This is a test ${new Date()}`;
-    ArduinoCloud.sendMessage(connectionId, cloudSerialInputTopic, message).then(() => {
-    // console.log(`[${new Date()}] Message sent to serial: [${message}]`);
+    ArduinoCloud.sendMessage(connectionId, cloudMonitorInputTopic, message).then(() => {
+    // console.log(`[${new Date()}] Message sent to monitor: [${message}]`);
     }, (error) => {
       throw new Error(error);
     });

@@ -45,16 +45,16 @@ ArduinoCloud.sendMessage(connectionId, topic, message).then(() => {
   // Message sent
 });
 
-ArduinoCloud.openCloudSerialMonitor(connectionId, deviceId, cb).then(topic => {
-  // Serial monitor messages fired to cb
+ArduinoCloud.openCloudMonitor(connectionId, deviceId, cb).then(topic => {
+  // Cloud monitor messages fired to cb
 });
 
-ArduinoCloud.writeCloudSerialMonitor(connectionId, deviceId, message).then(() => {
-  // Message sent to serial monitor
+ArduinoCloud.writeCloudMonitor(connectionId, deviceId, message).then(() => {
+  // Message sent to cloud monitor
 });
 
-ArduinoCloud.closeCloudSerialMonitor(connectionId, deviceId).then(topic => {
-  // Close serial monitor
+ArduinoCloud.closeCloudMonitor(connectionId, deviceId).then(topic => {
+  // Close cloud monitor
 });
 
 // Send a property value to a device

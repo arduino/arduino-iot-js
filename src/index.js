@@ -198,19 +198,19 @@ const sendMessage = (id, topic, message) => new Promise((resolve, reject) => {
   return resolve();
 });
 
-const openCloudSerialMonitor = (id, deviceId, cb) => {
-  const cloudSerialOutputTopic = `/a/d/${deviceId}/s/o`;
-  return subscribe(id, cloudSerialOutputTopic, cb);
+const openCloudMonitor = (id, deviceId, cb) => {
+  const cloudMonitorOutputTopic = `/a/d/${deviceId}/s/o`;
+  return subscribe(id, cloudMonitorOutputTopic, cb);
 };
 
-const writeCloudSerialMonitor = (id, deviceId, message) => {
-  const cloudSerialInputTopic = `/a/d/${deviceId}/s/i`;
-  return sendMessage(id, cloudSerialInputTopic, message);
+const writeCloudMonitor = (id, deviceId, message) => {
+  const cloudMonitorInputTopic = `/a/d/${deviceId}/s/i`;
+  return sendMessage(id, cloudMonitorInputTopic, message);
 };
 
-const closeCloudSerialMonitor = (id, deviceId) => {
-  const cloudSerialOutputTopic = `/a/d/${deviceId}/s/o`;
-  return unsubscribe(id, cloudSerialOutputTopic);
+const closeCloudMonitor = (id, deviceId) => {
+  const cloudMonitorOutputTopic = `/a/d/${deviceId}/s/o`;
+  return unsubscribe(id, cloudMonitorOutputTopic);
 };
 
 const sendProperty = (connectionId, deviceId, name, value, timestamp) => {
@@ -325,9 +325,9 @@ export default {
   subscribe,
   unsubscribe,
   sendMessage,
-  openCloudSerialMonitor,
-  writeCloudSerialMonitor,
-  closeCloudSerialMonitor,
+  openCloudMonitor,
+  writeCloudMonitor,
+  closeCloudMonitor,
   sendProperty,
   sendPropertyAsDevice,
   onPropertyValue,
