@@ -1,6 +1,6 @@
 {
   "name": "arduino-iot-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "GPLv3",
   "description": "JS module providing Arduino Create Cloud Connection",
   "main": "./src/index.js",
