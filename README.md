@@ -16,14 +16,12 @@ $ npm install arduino-iot-js
 import ArduinoCloud from 'arduino-iot-js';
 
 // connect establishes a connection with mqtt, using token as the password
-// Development Vernemq server host is wss.iot.oniudra.cc port 8443, token is your Hydra bearer token
 // options = {
-//   host: 'BROKER_URL',        // Default is wss.iot.oniudra.cc
+//   host: 'BROKER_URL',        // Default is wss.iot.arduino.cc
 //   port: BROKER_PORT,         // Default is 8443
 //   ssl: true/false,           // Default is true
-//   env: 'dev',                // Api env, default is dev (for now!)
 //   token: 'YOUR_BEARER_TOKEN' // Required!   
-//   apiUrl: 'AUTH SERVER URL', // https://auth-dev.arduino.cc for dev
+//   apiUrl: 'AUTH SERVER URL', // Default is https://auth.arduino.cc
 //   onDisconnect: message => { /* Disconnection callback */ }
 // }
 ArduinoCloud.connect(options).then(connectionId => {
@@ -74,7 +72,7 @@ ArduinoCloud.onPropertyValue(connectionId, deviceId, propertyName, updateCb).the
 ```
 
 ## Run tests
-First of all you need a valid Hydra Arduino token, you can get it from [Create Cloud Dev](https://create-dev.arduino.cc/cloud/)
+First of all you need a valid Hydra Arduino token, you can get it from [Arduino Create IoT Cloud](https://create.arduino.cc/cloud/)
 
 Then you can use this token to run tests
 
