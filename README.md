@@ -74,7 +74,7 @@ ArduinoCloud.onPropertyValue(connectionId, deviceId, propertyName, updateCb).the
 ```
 
 ## Run tests
-First of all you need a valid Hydra Arduino token, you can get it from [Create Cloud Dev](https://create-dev.arduino.cc/cloud/)
+First of all you need a valid Hydra Arduino token, you can get it from [Create Cloud](https://create.arduino.cc/cloud/)
 
 Then you can use this token to run tests
 
