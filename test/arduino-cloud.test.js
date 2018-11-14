@@ -38,11 +38,7 @@ it('ArduinoCloud connection', () => {
   /* global token */
   return ArduinoCloud.connect({
     token,
-    apiUrl: 'https://auth-dev.arduino.cc',
-    host: 'wss.iot.oniudra.cc',
     onDisconnect: (message) => {
-      // return ArduinoCloud.connect({host: 'localhost',
-      // port: 8080, ssl: false, env: 'dev', token, onDisconnect: message => {
       if (message.errorCode !== 0) {
         throw Error(message);
       }

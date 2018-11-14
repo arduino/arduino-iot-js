@@ -26,6 +26,8 @@ import ArduinoCloudError from './ArduinoCloudError';
 const connections = {};
 const propertyCallback = {};
 const arduinoCloudPort = 8443;
+const arduinoCloudHost = 'wss.iot.arduino.cc';
+const arduinoAuthURL = 'https://auth.arduino.cc';
 
 const getUserId = (apiUrl, token) => fetch(apiUrl, {
   method: 'get',
@@ -44,9 +46,9 @@ const connect = options => new Promise((resolve, reject) => {
     ssl = true;
   }
   const opts = {
-    host: options.host,
+    host: options.host || arduinoCloudHost,
     port: options.port || arduinoCloudPort,
-    apiUrl: options.apiUrl,
+    apiUrl: options.apiUrl || arduinoAuthURL,
     ssl,
     token: options.token,
     onDisconnect: options.onDisconnect,
