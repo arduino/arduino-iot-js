@@ -2,7 +2,7 @@
   "name": "arduino-iot-js",
   "version": "0.0.3",
   "license": "GPLv3",
-  "description": "JS module providing Arduino Create Cloud Connection",
+  "description": "JS module providing Arduino Create IoT Cloud Connection",
   "main": "lib/index.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "cbor-js": "^0.1.0",
-    "paho-client": "git+ssh://git@github.com/eclipse/paho.mqtt.javascript.git"
+    "paho-client": "eclipse/paho.mqtt.javascript"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
