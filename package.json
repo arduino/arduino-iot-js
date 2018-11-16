@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "cbor-js": "^0.1.0",
-    "paho-client": "eclipse/paho.mqtt.javascript"
+    "paho-client": "bcmi-labs/paho.mqtt.javascript"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

@@ -52,6 +52,7 @@ const connect = options => new Promise((resolve, reject) => {
     ssl,
     token: options.token,
     onDisconnect: options.onDisconnect,
+    onTrace: options.onTrace,
   };
 
   if (!opts.host) {
@@ -132,6 +133,12 @@ const connect = options => new Promise((resolve, reject) => {
 
 
     connectionOpts.password = opts.token;
+
+    if (typeof opts.onTrace === 'function') {
+      client.trace = (log) => {
+        opts.onTrace(log);
+      };
+    }
 
     client.connect(connectionOpts);
   }, (error) => {
