@@ -222,8 +222,8 @@ const closeCloudMonitor = (id, deviceId) => {
   return unsubscribe(id, cloudMonitorOutputTopic);
 };
 
-const sendProperty = (connectionId, deviceId, name, value, timestamp) => {
-  const propertyInputTopic = `/a/d/${deviceId}/e/i`;
+const sendProperty = (connectionId, thingId, name, value, timestamp) => {
+  const propertyInputTopic = `/a/t/${thingId}/e/i`;
 
   if (timestamp && !Number.isInteger(timestamp)) {
     throw new Error('Timestamp must be Integer');
@@ -294,8 +294,8 @@ const getCborValue = (senMl) => {
   return arrayBufferToBase64(cborEncoded);
 };
 
-const sendPropertyAsDevice = (connectionId, deviceId, name, value, timestamp) => {
-  const propertyInputTopic = `/a/d/${deviceId}/e/o`;
+const sendPropertyAsDevice = (connectionId, deviceId, thingId, name, value, timestamp) => {
+  const propertyInputTopic = `/a/t/${thingId}/e/o`;
 
   if (timestamp && !Number.isInteger(timestamp)) {
     throw new Error('Timestamp must be Integer');
@@ -309,14 +309,14 @@ const sendPropertyAsDevice = (connectionId, deviceId, name, value, timestamp) =>
   return sendMessage(connectionId, propertyInputTopic, CBOR.encode([senMlValue]));
 };
 
-const onPropertyValue = (connectionId, deviceId, name, cb) => {
+const onPropertyValue = (connectionId, thingId, name, cb) => {
   if (!name) {
     throw new Error('Invalid property name');
   }
   if (typeof cb !== 'function') {
     throw new Error('Invalid callback');
   }
-  const propOutputTopic = `/a/d/${deviceId}/e/o`;
+  const propOutputTopic = `/a/t/${thingId}/e/o`;
 
   if (!propertyCallback[propOutputTopic]) {
     propertyCallback[propOutputTopic] = {};

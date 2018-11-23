@@ -59,13 +59,13 @@ ArduinoCloud.closeCloudMonitor(connectionId, deviceId).then(topic => {
 // Send a property value to a device
 // - value can be a string, a boolean or a number
 // - timestamp is a unix timestamp, not required
-ArduinoCloud.sendProperty(connectionId, deviceId, name, value, timestamp).then(() => {
+ArduinoCloud.sendProperty(connectionId, thingId, name, value, timestamp).then(() => {
   // Property value sent
 });
 
 // Register a callback on a property value change
 // 
-ArduinoCloud.onPropertyValue(connectionId, deviceId, propertyName, updateCb).then(() => {
+ArduinoCloud.onPropertyValue(connectionId, thingId, propertyName, updateCb).then(() => {
   // updateCb(message) will be called every time a new value is available. Value can be string, number, or a boolean depending on the property type
 });
 
