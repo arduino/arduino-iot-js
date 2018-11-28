@@ -18,6 +18,31 @@
 *
 */
 
+/*
+     SenML labels
+     https://tools.ietf.org/html/draft-ietf-core-senml-16#section-4.3
+
+     +---------------+-------+------------+------------+------------+
+     |          Name | Label | CBOR Label | JSON Type  | XML Type   |
+     +---------------+-------+------------+------------+------------+
+     |     Base Name | bn    |         -2 | String     | string     |
+     |     Base Time | bt    |         -3 | Number     | double     |
+     |     Base Unit | bu    |         -4 | String     | string     |
+     |    Base Value | bv    |         -5 | Number     | double     |
+     |      Base Sum | bs    |         -6 | Number     | double     |
+     |       Version | bver  |         -1 | Number     | int        |
+     |          Name | n     |          0 | String     | string     |
+     |          Unit | u     |          1 | String     | string     |
+     |         Value | v     |          2 | Number     | double     |
+     |  String Value | vs    |          3 | String     | string     |
+     | Boolean Value | vb    |          4 | Boolean    | boolean    |
+     |    Data Value | vd    |          8 | String (*) | string (*) |
+     |     Value Sum | s     |          5 | Number     | double     |
+     |          Time | t     |          6 | Number     | double     |
+     |   Update Time | ut    |          7 | Number     | double     |
+     +---------------+-------+------------+------------+------------+
+*/
+
 import Paho from 'paho-client';
 import CBOR from 'cbor-js';
 
@@ -87,18 +112,23 @@ const connect = options => new Promise((resolve, reject) => {
 
         const propertyValue = CBOR.decode(buf);
         propertyValue.forEach((p) => {
-          if (propertyCallback[msg.topic][p.n]) {
+          // Support cbor labels
+          const propertyNameKey = p.n !== undefined ? p.n : p['0'];
+          const valueKey = p.v !== undefined ? 'v' : '2';
+          const valueStringKey = p.vs !== undefined ? 'vs' : '3';
+          const valueBooleanKey = p.vb !== undefined ? 'vb' : '4';
+          if (propertyCallback[msg.topic][propertyNameKey]) {
             let value = null;
 
-            if (!(p.v === undefined)) {
-              value = p.v;
-            } else if (!(p.vs === undefined)) {
-              value = p.vs;
-            } else if (!(p.vb === undefined)) {
-              value = p.vb;
+            if (!(p[valueKey] === undefined)) {
+              value = p[valueKey];
+            } else if (!(p[valueStringKey] === undefined)) {
+              value = p[valueStringKey];
+            } else if (!(p[valueBooleanKey] === undefined)) {
+              value = p[valueBooleanKey];
             }
 
-            propertyCallback[msg.topic][p.n](value);
+            propertyCallback[msg.topic][propertyNameKey](value);
           }
         });
       }
