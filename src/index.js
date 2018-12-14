@@ -49,6 +49,7 @@ import CBOR from 'cbor-js';
 import ArduinoCloudError from './ArduinoCloudError';
 
 const connections = {};
+const subscribedTopics = {};
 const propertyCallback = {};
 const arduinoCloudPort = 8443;
 const arduinoCloudHost = 'wss.iot.arduino.cc';
@@ -78,6 +79,7 @@ const connect = options => new Promise((resolve, reject) => {
     token: options.token,
     onDisconnect: options.onDisconnect,
     onTrace: options.onTrace,
+    onConnected: options.onConnected,
   };
 
   if (!opts.host) {
@@ -131,6 +133,22 @@ const connect = options => new Promise((resolve, reject) => {
             propertyCallback[msg.topic][propertyNameKey](value);
           }
         });
+      }
+    };
+
+    client.onConnected = (reconnect) => {
+      if (reconnect === true) {
+        // This is a re-connection: re-subscribe to all topics subscribed before the
+        // connection loss
+        Object.getOwnPropertySymbols(subscribedTopics).forEach((connectionId) => {
+          Object.values(subscribedTopics[connectionId]).forEach((subscribeParams) => {
+            subscribe(connectionId, subscribeParams.topic, subscribeParams.cb)
+          });
+        });
+      }
+
+      if (typeof opts.onConnected === 'function') {
+        opts.onConnected(reconnect)
       }
     };
 
@@ -345,6 +363,15 @@ const onPropertyValue = (connectionId, thingId, name, cb) => {
     throw new Error('Invalid callback');
   }
   const propOutputTopic = `/a/t/${thingId}/e/o`;
+
+  if (!subscribedTopics[connectionId]) {
+    subscribedTopics[connectionId] = {};
+  }
+
+  subscribedTopics[connectionId][thingId] = {
+    topic: propOutputTopic,
+    cb: cb,
+  };
 
   if (!propertyCallback[propOutputTopic]) {
     propertyCallback[propOutputTopic] = {};
