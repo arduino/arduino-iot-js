@@ -171,9 +171,7 @@ const connect = options => new Promise((resolve, reject) => {
     }
 
     client.connect(connectionOpts);
-  }, (error) => {
-    throw new Error(error);
-  });
+  }, reject);
 });
 
 const disconnect = id => new Promise((resolve, reject) => {
