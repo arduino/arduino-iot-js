@@ -199,6 +199,21 @@ const disconnect = id => new Promise((resolve, reject) => {
   }
 
   client.disconnect();
+
+  // Remove property callbacks to allow resubscribing in a later connect()
+  Object.keys(propertyCallback).forEach((topic) => {
+    if (propertyCallback[topic]) {
+      delete propertyCallback[topic];
+    }
+  });
+
+  // Clean up subscribed topics - a new connection might not need the same topics
+  Object.keys(subscribedTopics).forEach((topic) => {
+    if (subscribedTopics[topic]) {
+      delete subscribedTopics[topic];
+    }
+  });
+
   return resolve();
 });
 
