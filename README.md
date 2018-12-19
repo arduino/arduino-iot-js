@@ -69,6 +69,12 @@ ArduinoCloud.onPropertyValue(thingId, propertyName, updateCb).then(() => {
   // updateCb(message) will be called every time a new value is available. Value can be string, number, or a boolean depending on the property type
 });
 
+// Re-connect with a new authentication token, keeping the subscriptions
+// to the Things topics
+ArduinoCloud.updateToken(newToken).then(() => {
+  // Successful reconnection with the provided new token
+});
+
 ```
 
 ## Run tests

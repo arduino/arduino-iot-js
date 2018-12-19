@@ -49,6 +49,7 @@ import CBOR from 'cbor-js';
 import ArduinoCloudError from './ArduinoCloudError';
 
 let connection = null;
+let connectionOptions = null;
 const subscribedTopics = {};
 const propertyCallback = {};
 const arduinoCloudPort = 8443;
@@ -81,6 +82,8 @@ const connect = options => new Promise((resolve, reject) => {
     onTrace: options.onTrace,
     onConnected: options.onConnected,
   };
+
+  connectionOptions = opts;
 
   if (connection) {
     return reject(new Error('connection failed: connection already open'));
@@ -221,6 +224,40 @@ const disconnect = () => new Promise((resolve, reject) => {
 
   return resolve();
 });
+
+const updateToken = token => new Promise((resolve, reject) => {
+  if (!connection) {
+    return reject(new Error('disconnection failed: connection closed'));
+  }
+
+  try {
+    // Disconnect to the connection using the old token
+    connection.disconnect();
+  } catch (error) {
+    // Ignore disconnection errors that comes out when Paho is reconnecting
+  }
+
+  // Remove the connection
+  connection = null;
+
+  return resolve();
+})
+  .then(() => {
+    // Reconnect using the new token
+    const reconnectOptions = Object.assign({}, connectionOptions, { token });
+    return connect(reconnectOptions);
+  })
+  .then(() => {
+    // Re-subscribe to all topics subscribed before the reconnection
+    Object.values(subscribedTopics).forEach((subscribeParams) => {
+      subscribe(subscribeParams.topic, subscribeParams.cb);
+    });
+
+    if (typeof connectionOptions.onConnected === 'function') {
+      // Call the connection callback (with the reconnection param set to true)
+      connectionOptions.onConnected(true);
+    }
+  });
 
 const subscribe = (topic, cb) => new Promise((resolve, reject) => {
   if (!connection) {
@@ -399,6 +436,7 @@ const onPropertyValue = (thingId, name, cb) => {
 export default {
   connect,
   disconnect,
+  updateToken,
   subscribe,
   unsubscribe,
   sendMessage,
