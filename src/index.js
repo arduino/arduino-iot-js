@@ -142,13 +142,13 @@ const connect = options => new Promise((resolve, reject) => {
         // connection loss
         Object.getOwnPropertySymbols(subscribedTopics).forEach((connectionId) => {
           Object.values(subscribedTopics[connectionId]).forEach((subscribeParams) => {
-            subscribe(connectionId, subscribeParams.topic, subscribeParams.cb)
+            subscribe(connectionId, subscribeParams.topic, subscribeParams.cb);
           });
         });
       }
 
       if (typeof opts.onConnected === 'function') {
-        opts.onConnected(reconnect)
+        opts.onConnected(reconnect);
       }
     };
 
@@ -198,7 +198,14 @@ const disconnect = id => new Promise((resolve, reject) => {
     return reject(new Error('disconnection failed: client not found'));
   }
 
-  client.disconnect();
+  try {
+    client.disconnect();
+  } catch (error) {
+    return reject(error);
+  }
+
+  // Remove the connection
+  delete connections[id];
 
   // Remove property callbacks to allow resubscribing in a later connect()
   Object.keys(propertyCallback).forEach((topic) => {
@@ -208,19 +215,14 @@ const disconnect = id => new Promise((resolve, reject) => {
   });
 
   // Clean up subscribed topics - a new connection might not need the same topics
-  Object.keys(subscribedTopics).forEach((topic) => {
-    if (subscribedTopics[topic]) {
-      delete subscribedTopics[topic];
-    }
-  });
-
+  delete subscribedTopics[id];
   return resolve();
 });
 
 const subscribe = (id, topic, cb) => new Promise((resolve, reject) => {
   const client = connections[id];
   if (!client) {
-    return reject(new Error('disconnection failed: client not found'));
+    return reject(new Error('subscription failed: client not found'));
   }
 
   return client.subscribe(topic, {
@@ -385,7 +387,7 @@ const onPropertyValue = (connectionId, thingId, name, cb) => {
 
   subscribedTopics[connectionId][thingId] = {
     topic: propOutputTopic,
-    cb: cb,
+    cb,
   };
 
   if (!propertyCallback[propOutputTopic]) {
