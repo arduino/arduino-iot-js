@@ -225,39 +225,65 @@ const disconnect = () => new Promise((resolve, reject) => {
   return resolve();
 });
 
-const updateToken = token => new Promise((resolve, reject) => {
+const updateToken = token => new Promise(((updateTokenResolve, updateTokenReject) => {
   if (!connection) {
-    return reject(new Error('disconnection failed: connection closed'));
+    return updateTokenReject(new Error('disconnection failed: connection closed'));
   }
 
-  try {
-    // Disconnect to the connection using the old token
-    connection.disconnect();
-  } catch (error) {
-    // Ignore disconnection errors that comes out when Paho is reconnecting
-  }
+  // Wrap the update token process into a single promise-returning function
+  const updateTokenPromise = () => new Promise((resolve) => {
+    try {
+      // Disconnect to the connection using the old token
+      connection.disconnect();
+    } catch (error) {
+      // Ignore disconnection errors that comes out when Paho is reconnecting
+    }
 
-  // Remove the connection
-  connection = null;
+    // Remove the connection
+    connection = null;
 
-  return resolve();
-})
-  .then(() => {
-    // Reconnect using the new token
-    const reconnectOptions = Object.assign({}, connectionOptions, { token });
-    return connect(reconnectOptions);
+    return resolve();
   })
-  .then(() => {
-    // Re-subscribe to all topics subscribed before the reconnection
-    Object.values(subscribedTopics).forEach((subscribeParams) => {
-      subscribe(subscribeParams.topic, subscribeParams.cb);
+    .then(() => {
+      // Reconnect using the new token
+      const reconnectOptions = Object.assign({}, connectionOptions, { token });
+      return connect(reconnectOptions);
+    })
+    .then(() => {
+      // Re-subscribe to all topics subscribed before the reconnection
+      Object.values(subscribedTopics).forEach((subscribeParams) => {
+        subscribe(subscribeParams.topic, subscribeParams.cb);
+      });
+
+      if (typeof connectionOptions.onConnected === 'function') {
+        // Call the connection callback (with the reconnection param set to true)
+        connectionOptions.onConnected(true);
+      }
     });
 
-    if (typeof connectionOptions.onConnected === 'function') {
-      // Call the connection callback (with the reconnection param set to true)
-      connectionOptions.onConnected(true);
-    }
-  });
+  let updateTokenInterval = null;
+
+  // It runs the token update. If it succeed, clears the interval and
+  // exits updateToken.
+  const updateTokenIntervalFunction = () => {
+    updateTokenPromise()
+      .then(() => {
+        // Token update went well - exiting
+        clearInterval(updateTokenInterval);
+        return updateTokenResolve();
+      })
+      .catch(() => {
+        // Ignore reconnection errors - keep trying to reconnect
+      });
+  };
+
+  // Try to refresh the token every 30 secs
+  updateTokenInterval = setInterval(updateTokenIntervalFunction, 30000);
+
+  // Try immediately to refresh the token - if it fails the next
+  // tentative will be started by the setInterval
+  updateTokenIntervalFunction();
+}));
 
 const subscribe = (topic, cb) => new Promise((resolve, reject) => {
   if (!connection) {
