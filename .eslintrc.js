@@ -3,5 +3,8 @@ module.exports = {
     "env": {
       "browser": true,
       "jest": true
+    },
+    "rules": {
+      "no-await-in-loop": 0
     }
 };

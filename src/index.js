@@ -225,31 +225,24 @@ const disconnect = () => new Promise((resolve, reject) => {
   return resolve();
 });
 
-const updateToken = token => new Promise(((updateTokenResolve, updateTokenReject) => {
-  if (!connection) {
-    return updateTokenReject(new Error('disconnection failed: connection closed'));
-  }
-
-  // Wrap the update token process into a single promise-returning function
-  const updateTokenPromise = () => new Promise((resolve) => {
+const updateToken = async function updateToken(token) {
+  // This infinite loop will exit once the reconnection is successful -
+  // and will pause between each reconnection tentative, every 5 secs.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
     try {
-      // Disconnect to the connection using the old token
-      connection.disconnect();
-    } catch (error) {
-      // Ignore disconnection errors that comes out when Paho is reconnecting
-    }
+      if (connection) {
+        // Disconnect to the connection that is using the old token
+        connection.disconnect();
 
-    // Remove the connection
-    connection = null;
+        // Remove the connection
+        connection = null;
+      }
 
-    return resolve();
-  })
-    .then(() => {
       // Reconnect using the new token
       const reconnectOptions = Object.assign({}, connectionOptions, { token });
-      return connect(reconnectOptions);
-    })
-    .then(() => {
+      await connect(reconnectOptions);
+
       // Re-subscribe to all topics subscribed before the reconnection
       Object.values(subscribedTopics).forEach((subscribeParams) => {
         subscribe(subscribeParams.topic, subscribeParams.cb);
@@ -259,31 +252,21 @@ const updateToken = token => new Promise(((updateTokenResolve, updateTokenReject
         // Call the connection callback (with the reconnection param set to true)
         connectionOptions.onConnected(true);
       }
-    });
 
-  let updateTokenInterval = null;
+      // Exit the infinite loop
+      return;
+    } catch (error) {
+      // Expose paho-mqtt errors
+      // eslint-disable-next-line no-console
+      console.error(error);
 
-  // It runs the token update. If it succeed, clears the interval and
-  // exits updateToken.
-  const updateTokenIntervalFunction = () => {
-    updateTokenPromise()
-      .then(() => {
-        // Token update went well - exiting
-        clearInterval(updateTokenInterval);
-        return updateTokenResolve();
-      })
-      .catch(() => {
-        // Ignore reconnection errors - keep trying to reconnect
+      // Something went wrong during the reconnection - retry in 5 secs.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5000);
       });
-  };
-
-  // Try to refresh the token every 30 secs
-  updateTokenInterval = setInterval(updateTokenIntervalFunction, 30000);
-
-  // Try immediately to refresh the token - if it fails the next
-  // tentative will be started by the setInterval
-  updateTokenIntervalFunction();
-}));
+    }
+  }
+};
 
 const subscribe = (topic, cb) => new Promise((resolve, reject) => {
   if (!connection) {
