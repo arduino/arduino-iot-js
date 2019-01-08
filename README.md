@@ -24,49 +24,55 @@ import ArduinoCloud from 'arduino-iot-js';
 //   apiUrl: 'AUTH SERVER URL', // Default is https://auth.arduino.cc
 //   onDisconnect: message => { /* Disconnection callback */ }
 // }
-ArduinoCloud.connect(options).then(connectionId => {
+ArduinoCloud.connect(options).then(() => {
   // Connected
 });
 
-ArduinoCloud.disconnect(connectionId).then(() => {
+ArduinoCloud.disconnect().then(() => {
   // Disconnected
 });
 
-ArduinoCloud.subscribe(connectionId, topic, cb).then(topic => {
+ArduinoCloud.subscribe(topic, cb).then(topic => {
   // Subscribed to topic, messaged fired in the cb
 });
 
-ArduinoCloud.unsubscribe(connectionId, topic).then(topic => {
+ArduinoCloud.unsubscribe(topic).then(topic => {
   // Unsubscribed to topic
 });
 
-ArduinoCloud.sendMessage(connectionId, topic, message).then(() => {
+ArduinoCloud.sendMessage(topic, message).then(() => {
   // Message sent
 });
 
-ArduinoCloud.openCloudMonitor(connectionId, deviceId, cb).then(topic => {
+ArduinoCloud.openCloudMonitor(deviceId, cb).then(topic => {
   // Cloud monitor messages fired to cb
 });
 
-ArduinoCloud.writeCloudMonitor(connectionId, deviceId, message).then(() => {
+ArduinoCloud.writeCloudMonitor(deviceId, message).then(() => {
   // Message sent to cloud monitor
 });
 
-ArduinoCloud.closeCloudMonitor(connectionId, deviceId).then(topic => {
+ArduinoCloud.closeCloudMonitor(deviceId).then(topic => {
   // Close cloud monitor
 });
 
 // Send a property value to a device
 // - value can be a string, a boolean or a number
 // - timestamp is a unix timestamp, not required
-ArduinoCloud.sendProperty(connectionId, thingId, name, value, timestamp).then(() => {
+ArduinoCloud.sendProperty(thingId, name, value, timestamp).then(() => {
   // Property value sent
 });
 
 // Register a callback on a property value change
 // 
-ArduinoCloud.onPropertyValue(connectionId, thingId, propertyName, updateCb).then(() => {
+ArduinoCloud.onPropertyValue(thingId, propertyName, updateCb).then(() => {
   // updateCb(message) will be called every time a new value is available. Value can be string, number, or a boolean depending on the property type
+});
+
+// Re-connect with a new authentication token, keeping the subscriptions
+// to the Things topics
+ArduinoCloud.updateToken(newToken).then(() => {
+  // Successful reconnection with the provided new token
 });
 
 ```

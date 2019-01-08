@@ -48,7 +48,8 @@ import CBOR from 'cbor-js';
 
 import ArduinoCloudError from './ArduinoCloudError';
 
-const connections = {};
+let connection = null;
+let connectionOptions = null;
 const subscribedTopics = {};
 const propertyCallback = {};
 const arduinoCloudPort = 8443;
@@ -81,6 +82,12 @@ const connect = options => new Promise((resolve, reject) => {
     onTrace: options.onTrace,
     onConnected: options.onConnected,
   };
+
+  connectionOptions = opts;
+
+  if (connection) {
+    return reject(new Error('connection failed: connection already open'));
+  }
 
   if (!opts.host) {
     return reject(new Error('connection failed: you need to provide a valid host (broker)'));
@@ -140,15 +147,13 @@ const connect = options => new Promise((resolve, reject) => {
       if (reconnect === true) {
         // This is a re-connection: re-subscribe to all topics subscribed before the
         // connection loss
-        Object.getOwnPropertySymbols(subscribedTopics).forEach((connectionId) => {
-          Object.values(subscribedTopics[connectionId]).forEach((subscribeParams) => {
-            subscribe(connectionId, subscribeParams.topic, subscribeParams.cb)
-          });
+        Object.values(subscribedTopics).forEach((subscribeParams) => {
+          subscribe(subscribeParams.topic, subscribeParams.cb);
         });
       }
 
       if (typeof opts.onConnected === 'function') {
-        opts.onConnected(reconnect)
+        opts.onConnected(reconnect);
       }
     };
 
@@ -170,9 +175,8 @@ const connect = options => new Promise((resolve, reject) => {
       reconnect: true,
       keepAliveInterval: 30,
       onSuccess: () => {
-        const id = Symbol(clientID);
-        connections[id] = client;
-        return resolve(id);
+        connection = client;
+        return resolve();
       },
       onFailure: ({ errorCode, errorMessage }) => reject(
         new ArduinoCloudError(errorCode, errorMessage),
@@ -192,13 +196,19 @@ const connect = options => new Promise((resolve, reject) => {
   }, reject);
 });
 
-const disconnect = id => new Promise((resolve, reject) => {
-  const client = connections[id];
-  if (!client) {
-    return reject(new Error('disconnection failed: client not found'));
+const disconnect = () => new Promise((resolve, reject) => {
+  if (!connection) {
+    return reject(new Error('disconnection failed: connection closed'));
   }
 
-  client.disconnect();
+  try {
+    connection.disconnect();
+  } catch (error) {
+    return reject(error);
+  }
+
+  // Remove the connection
+  connection = null;
 
   // Remove property callbacks to allow resubscribing in a later connect()
   Object.keys(propertyCallback).forEach((topic) => {
@@ -209,39 +219,78 @@ const disconnect = id => new Promise((resolve, reject) => {
 
   // Clean up subscribed topics - a new connection might not need the same topics
   Object.keys(subscribedTopics).forEach((topic) => {
-    if (subscribedTopics[topic]) {
-      delete subscribedTopics[topic];
-    }
+    delete subscribedTopics[topic];
   });
 
   return resolve();
 });
 
-const subscribe = (id, topic, cb) => new Promise((resolve, reject) => {
-  const client = connections[id];
-  if (!client) {
-    return reject(new Error('disconnection failed: client not found'));
+const updateToken = async function updateToken(token) {
+  // This infinite loop will exit once the reconnection is successful -
+  // and will pause between each reconnection tentative, every 5 secs.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      if (connection) {
+        // Disconnect to the connection that is using the old token
+        connection.disconnect();
+
+        // Remove the connection
+        connection = null;
+      }
+
+      // Reconnect using the new token
+      const reconnectOptions = Object.assign({}, connectionOptions, { token });
+      await connect(reconnectOptions);
+
+      // Re-subscribe to all topics subscribed before the reconnection
+      Object.values(subscribedTopics).forEach((subscribeParams) => {
+        subscribe(subscribeParams.topic, subscribeParams.cb);
+      });
+
+      if (typeof connectionOptions.onConnected === 'function') {
+        // Call the connection callback (with the reconnection param set to true)
+        connectionOptions.onConnected(true);
+      }
+
+      // Exit the infinite loop
+      return;
+    } catch (error) {
+      // Expose paho-mqtt errors
+      // eslint-disable-next-line no-console
+      console.error(error);
+
+      // Something went wrong during the reconnection - retry in 5 secs.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5000);
+      });
+    }
+  }
+};
+
+const subscribe = (topic, cb) => new Promise((resolve, reject) => {
+  if (!connection) {
+    return reject(new Error('subscription failed: connection closed'));
   }
 
-  return client.subscribe(topic, {
+  return connection.subscribe(topic, {
     onSuccess: () => {
-      if (!client.topics[topic]) {
-        client.topics[topic] = [];
+      if (!connection.topics[topic]) {
+        connection.topics[topic] = [];
       }
-      client.topics[topic].push(cb);
+      connection.topics[topic].push(cb);
       return resolve(topic);
     },
     onFailure: () => reject(),
   });
 });
 
-const unsubscribe = (id, topic) => new Promise((resolve, reject) => {
-  const client = connections[id];
-  if (!client) {
-    return reject(new Error('disconnection failed: client not found'));
+const unsubscribe = topic => new Promise((resolve, reject) => {
+  if (!connection) {
+    return reject(new Error('disconnection failed: connection closed'));
   }
 
-  return client.unsubscribe(topic, {
+  return connection.unsubscribe(topic, {
     onSuccess: () => resolve(topic),
     onFailure: () => reject(),
   });
@@ -258,32 +307,31 @@ const arrayBufferToBase64 = (buffer) => {
   return window.btoa(binary);
 };
 
-const sendMessage = (id, topic, message) => new Promise((resolve, reject) => {
-  const client = connections[id];
-  if (!client) {
-    return reject(new Error('disconnection failed: client not found'));
+const sendMessage = (topic, message) => new Promise((resolve, reject) => {
+  if (!connection) {
+    return reject(new Error('disconnection failed: connection closed'));
   }
 
-  client.publish(topic, message, 1, false);
+  connection.publish(topic, message, 1, false);
   return resolve();
 });
 
-const openCloudMonitor = (id, deviceId, cb) => {
+const openCloudMonitor = (deviceId, cb) => {
   const cloudMonitorOutputTopic = `/a/d/${deviceId}/s/o`;
-  return subscribe(id, cloudMonitorOutputTopic, cb);
+  return subscribe(cloudMonitorOutputTopic, cb);
 };
 
-const writeCloudMonitor = (id, deviceId, message) => {
+const writeCloudMonitor = (deviceId, message) => {
   const cloudMonitorInputTopic = `/a/d/${deviceId}/s/i`;
-  return sendMessage(id, cloudMonitorInputTopic, message);
+  return sendMessage(cloudMonitorInputTopic, message);
 };
 
-const closeCloudMonitor = (id, deviceId) => {
+const closeCloudMonitor = (deviceId) => {
   const cloudMonitorOutputTopic = `/a/d/${deviceId}/s/o`;
-  return unsubscribe(id, cloudMonitorOutputTopic);
+  return unsubscribe(cloudMonitorOutputTopic);
 };
 
-const sendProperty = (connectionId, thingId, name, value, timestamp) => {
+const sendProperty = (thingId, name, value, timestamp) => {
   const propertyInputTopic = `/a/t/${thingId}/e/i`;
 
   if (timestamp && !Number.isInteger(timestamp)) {
@@ -313,7 +361,7 @@ const sendProperty = (connectionId, thingId, name, value, timestamp) => {
       break;
   }
 
-  return sendMessage(connectionId, propertyInputTopic, CBOR.encode([cborValue]));
+  return sendMessage(propertyInputTopic, CBOR.encode([cborValue]));
 };
 
 const getSenml = (deviceId, name, value, timestamp) => {
@@ -355,7 +403,7 @@ const getCborValue = (senMl) => {
   return arrayBufferToBase64(cborEncoded);
 };
 
-const sendPropertyAsDevice = (connectionId, deviceId, thingId, name, value, timestamp) => {
+const sendPropertyAsDevice = (deviceId, thingId, name, value, timestamp) => {
   const propertyInputTopic = `/a/t/${thingId}/e/o`;
 
   if (timestamp && !Number.isInteger(timestamp)) {
@@ -367,10 +415,10 @@ const sendPropertyAsDevice = (connectionId, deviceId, thingId, name, value, time
   }
 
   const senMlValue = getSenml(deviceId, name, value, timestamp);
-  return sendMessage(connectionId, propertyInputTopic, CBOR.encode([senMlValue]));
+  return sendMessage(propertyInputTopic, CBOR.encode([senMlValue]));
 };
 
-const onPropertyValue = (connectionId, thingId, name, cb) => {
+const onPropertyValue = (thingId, name, cb) => {
   if (!name) {
     throw new Error('Invalid property name');
   }
@@ -379,19 +427,15 @@ const onPropertyValue = (connectionId, thingId, name, cb) => {
   }
   const propOutputTopic = `/a/t/${thingId}/e/o`;
 
-  if (!subscribedTopics[connectionId]) {
-    subscribedTopics[connectionId] = {};
-  }
-
-  subscribedTopics[connectionId][thingId] = {
+  subscribedTopics[thingId] = {
     topic: propOutputTopic,
-    cb: cb,
+    cb,
   };
 
   if (!propertyCallback[propOutputTopic]) {
     propertyCallback[propOutputTopic] = {};
     propertyCallback[propOutputTopic][name] = cb;
-    subscribe(connectionId, propOutputTopic, cb);
+    subscribe(propOutputTopic, cb);
   } else if (propertyCallback[propOutputTopic] && !propertyCallback[propOutputTopic][name]) {
     propertyCallback[propOutputTopic][name] = cb;
   }
@@ -401,6 +445,7 @@ const onPropertyValue = (connectionId, thingId, name, cb) => {
 export default {
   connect,
   disconnect,
+  updateToken,
   subscribe,
   unsubscribe,
   sendMessage,

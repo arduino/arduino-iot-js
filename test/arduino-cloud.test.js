@@ -19,9 +19,8 @@
 */
 const ArduinoCloud = require('../dist/index.js');
 
-let connectionId;
 const deviceId = '1f4ced70-53ad-4b29-b221-1b0abbdfc757';
-const thingId = '2cea8542-d472-4464-859c-4ef4dfc7d1d3'
+const thingId = '2cea8542-d472-4464-859c-4ef4dfc7d1d3';
 const propertyIntName = 'integer';
 const propertyIntValue = 22;
 
@@ -34,27 +33,27 @@ const propertyStrVal = 'ok';
 const propertyBoolName = 'boolean';
 const propertyBoolVal = true;
 
-it('ArduinoCloud connection', () => {
-  expect.assertions(1);
+it('ArduinoCloud connection', (done) => {
   /* global token */
-  return ArduinoCloud.connect({
+  ArduinoCloud.connect({
     token,
     onDisconnect: (message) => {
       if (message.errorCode !== 0) {
         throw Error(message);
       }
     },
-  }).then((id) => {
-    connectionId = id;
-    expect(id).toBeDefined();
-  }, (error) => {
-    throw new Error(error);
-  });
+  })
+    .then(() => {
+      done();
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
 });
 
 it('Property name must be a string in sendProperty', (done) => {
   try {
-    ArduinoCloud.sendProperty(connectionId, deviceId, undefined, propertyIntValue);
+    ArduinoCloud.sendProperty(deviceId, undefined, propertyIntValue);
   } catch (error) {
     if (error.message === 'Name must be a valid string') {
       done();
@@ -63,7 +62,7 @@ it('Property name must be a string in sendProperty', (done) => {
 });
 
 it('Simulate client write to cloud monitor', (done) => {
-  ArduinoCloud.writeCloudMonitor(connectionId, deviceId, `this is a test ${Math.random()}`).then(() => {
+  ArduinoCloud.writeCloudMonitor(deviceId, `this is a test ${Math.random()}`).then(() => {
     done();
   }, (error) => {
     throw new Error(error);
@@ -72,7 +71,7 @@ it('Simulate client write to cloud monitor', (done) => {
 
 it('Simulate device write to cloud monitor', (done) => {
   const cloudMonitorInputTopic = `/a/d/${deviceId}/s/o`;
-  ArduinoCloud.sendMessage(connectionId, cloudMonitorInputTopic, `this is a test ${Math.random()}`).then(() => {
+  ArduinoCloud.sendMessage(cloudMonitorInputTopic, `this is a test ${Math.random()}`).then(() => {
     done();
   }, (error) => {
     throw new Error(error);
@@ -87,10 +86,10 @@ it('Simulate device write and client read his message from cloud monitor', (done
     done();
   };
 
-  ArduinoCloud.openCloudMonitor(connectionId, deviceId, cb).then(() => {
+  ArduinoCloud.openCloudMonitor(deviceId, cb).then(() => {
     // console.log(`Subscribed to topic: ${topic}`);
     const message = `This is a test ${new Date()}`;
-    ArduinoCloud.sendMessage(connectionId, cloudMonitorInputTopic, message).then(() => {
+    ArduinoCloud.sendMessage(cloudMonitorInputTopic, message).then(() => {
     // console.log(`[${new Date()}] Message sent to monitor: [${message}]`);
     }, (error) => {
       throw new Error(error);
@@ -101,42 +100,42 @@ it('Simulate device write and client read his message from cloud monitor', (done
 });
 
 it('Simulate client read integer property sent by device', (done) => {
-  ArduinoCloud.onPropertyValue(connectionId, thingId, propertyIntName, (value) => {
+  ArduinoCloud.onPropertyValue(thingId, propertyIntName, (value) => {
     if (value === propertyIntValue) {
       done();
     }
   }).then(() => {
-    ArduinoCloud.sendPropertyAsDevice(connectionId, deviceId, thingId, propertyIntName, propertyIntValue);
+    ArduinoCloud.sendPropertyAsDevice(deviceId, thingId, propertyIntName, propertyIntValue);
   });
 });
 
 it('Simulate client read float property sent by device', (done) => {
-  ArduinoCloud.onPropertyValue(connectionId, thingId, propertyFloatName, (value) => {
+  ArduinoCloud.onPropertyValue(thingId, propertyFloatName, (value) => {
     if (value === propertyFloatVal) {
       done();
     }
   }).then(() => {
-    ArduinoCloud.sendPropertyAsDevice(connectionId, deviceId, thingId, propertyFloatName, propertyFloatVal);
+    ArduinoCloud.sendPropertyAsDevice(deviceId, thingId, propertyFloatName, propertyFloatVal);
   });
 });
 
 it('Simulate client read string property sent by device', (done) => {
-  ArduinoCloud.onPropertyValue(connectionId, thingId, propertyStrName, (value) => {
+  ArduinoCloud.onPropertyValue(thingId, propertyStrName, (value) => {
     if (value === propertyStrVal) {
       done();
     }
   }).then(() => {
-    ArduinoCloud.sendPropertyAsDevice(connectionId, deviceId, thingId, propertyStrName, propertyStrVal);
+    ArduinoCloud.sendPropertyAsDevice(deviceId, thingId, propertyStrName, propertyStrVal);
   });
 });
 
 it('Simulate client read boolean property sent by device', (done) => {
-  ArduinoCloud.onPropertyValue(connectionId, thingId, propertyBoolName, (value) => {
+  ArduinoCloud.onPropertyValue(thingId, propertyBoolName, (value) => {
     if (value === propertyBoolVal) {
-      ArduinoCloud.disconnect(connectionId);
+      ArduinoCloud.disconnect();
       done();
     }
   }).then(() => {
-    ArduinoCloud.sendPropertyAsDevice(connectionId, deviceId, thingId, propertyBoolName, propertyBoolVal);
+    ArduinoCloud.sendPropertyAsDevice(deviceId, thingId, propertyBoolName, propertyBoolVal);
   });
 });
