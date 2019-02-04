@@ -392,7 +392,7 @@ const toCloudProtocolV2 = (cborValue) => {
   return cloudV2CBORValue;
 };
 
-const sendProperty = (thingId, name, value, timestamp, useCloudProtocolV2 = true) => {
+const sendProperty = (thingId, name, value, timestamp, useCloudProtocolV2 = false) => {
   const propertyInputTopic = `/a/t/${thingId}/e/i`;
 
   if (timestamp && !Number.isInteger(timestamp)) {
@@ -429,7 +429,7 @@ const sendProperty = (thingId, name, value, timestamp, useCloudProtocolV2 = true
   return sendMessage(propertyInputTopic, CBOR.encode([cborValue]));
 };
 
-const getSenml = (deviceId, name, value, timestamp, useCloudProtocolV2 = true) => {
+const getSenml = (deviceId, name, value, timestamp, useCloudProtocolV2 = false) => {
   if (timestamp && !Number.isInteger(timestamp)) {
     throw new Error('Timestamp must be Integer');
   }
