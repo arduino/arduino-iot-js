@@ -17,12 +17,13 @@ import ArduinoCloud from 'arduino-iot-js';
 
 // connect establishes a connection with mqtt, using token as the password
 // options = {
-//   host: 'BROKER_URL',        // Default is wss.iot.arduino.cc
-//   port: BROKER_PORT,         // Default is 8443
-//   ssl: true/false,           // Default is true
-//   token: 'YOUR_BEARER_TOKEN' // Required!   
-//   apiUrl: 'AUTH SERVER URL', // Default is https://auth.arduino.cc
-//   onDisconnect: message => { /* Disconnection callback */ }
+//   host: 'BROKER_URL',              // Default is wss.iot.arduino.cc
+//   port: BROKER_PORT,               // Default is 8443
+//   ssl: true/false,                 // Default is true
+//   token: 'YOUR_BEARER_TOKEN'       // Required!   
+//   apiUrl: 'AUTH SERVER URL',       // Default is https://auth.arduino.cc
+//   onDisconnect: message => { /* Disconnection callback */ },
+//   useCloudProtocolV2: true/false,  // Default is false
 // }
 ArduinoCloud.connect(options).then(() => {
   // Connected
