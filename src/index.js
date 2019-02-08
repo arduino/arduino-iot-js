@@ -474,7 +474,8 @@ const getCborValue = (senMl) => {
   return arrayBufferToBase64(cborEncoded);
 };
 
-const sendPropertyAsDevice = (deviceId, thingId, name, value, timestamp) => {
+const sendPropertyAsDevice = (deviceId, thingId, name, value, timestamp,
+  useCloudProtocolV2 = false) => {
   const propertyInputTopic = `/a/t/${thingId}/e/o`;
 
   if (timestamp && !Number.isInteger(timestamp)) {
@@ -485,7 +486,7 @@ const sendPropertyAsDevice = (deviceId, thingId, name, value, timestamp) => {
     throw new Error('Name must be a valid string');
   }
 
-  const senMlValue = getSenml(deviceId, name, value, timestamp);
+  const senMlValue = getSenml(deviceId, name, value, timestamp, useCloudProtocolV2);
   return sendMessage(propertyInputTopic, CBOR.encode([senMlValue]));
 };
 
