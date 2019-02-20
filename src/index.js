@@ -81,6 +81,7 @@ const connect = options => new Promise((resolve, reject) => {
     onDisconnect: options.onDisconnect,
     onTrace: options.onTrace,
     onConnected: options.onConnected,
+    useCloudProtocolV2: options.useCloudProtocolV2 || false,
   };
 
   connectionOptions = opts;
@@ -392,7 +393,7 @@ const toCloudProtocolV2 = (cborValue) => {
   return cloudV2CBORValue;
 };
 
-const sendProperty = (thingId, name, value, timestamp, useCloudProtocolV2 = false) => {
+const sendProperty = (thingId, name, value, timestamp) => {
   const propertyInputTopic = `/a/t/${thingId}/e/i`;
 
   if (timestamp && !Number.isInteger(timestamp)) {
@@ -422,14 +423,14 @@ const sendProperty = (thingId, name, value, timestamp, useCloudProtocolV2 = fals
       break;
   }
 
-  if (useCloudProtocolV2) {
+  if (connectionOptions.useCloudProtocolV2) {
     cborValue = toCloudProtocolV2(cborValue);
   }
 
   return sendMessage(propertyInputTopic, CBOR.encode([cborValue]));
 };
 
-const getSenml = (deviceId, name, value, timestamp, useCloudProtocolV2 = false) => {
+const getSenml = (deviceId, name, value, timestamp) => {
   if (timestamp && !Number.isInteger(timestamp)) {
     throw new Error('Timestamp must be Integer');
   }
@@ -462,7 +463,7 @@ const getSenml = (deviceId, name, value, timestamp, useCloudProtocolV2 = false) 
   }
 
 
-  if (useCloudProtocolV2) {
+  if (connectionOptions.useCloudProtocolV2) {
     return toCloudProtocolV2(senMl);
   }
 
