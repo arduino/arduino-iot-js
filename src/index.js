@@ -427,7 +427,7 @@ const sendProperty = (thingId, name, value, timestamp) => {
     cborValue = toCloudProtocolV2(cborValue);
   }
 
-  return sendMessage(propertyInputTopic, CBOR.encode([cborValue]));
+  return sendMessage(propertyInputTopic, CBOR.encode([cborValue], true));
 };
 
 const getSenml = (deviceId, name, value, timestamp) => {
