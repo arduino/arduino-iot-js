@@ -44,7 +44,7 @@
 */
 
 import Paho from 'paho-client';
-import CBOR from 'cbor-js';
+import CBOR from '@arduino/cbor-js';
 
 import ArduinoCloudError from './ArduinoCloudError';
 
