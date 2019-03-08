@@ -31,7 +31,7 @@
     "eslint": "^5.14.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
-    "jest": "^23.6.0",
+    "jest": "^24.3.1",
     "rimraf": "^2.6.3",
     "rollup": "^0.59.4",
     "rollup-plugin-babel": "^3.0.4",
