@@ -404,6 +404,44 @@ const sendProperty = (thingId, name, value, timestamp) => {
     throw new Error('Name must be a valid string');
   }
 
+  if (typeof value === 'object') {
+    const objectKeys = Object.keys(value);
+    const cborValues = objectKeys.map((key, i) => {
+      const cborValue = {
+        n: `${name}:${key}`,
+      };
+
+      if (i === 0) {
+        cborValue.bt = timestamp || new Date().getTime();
+      }
+
+      switch (typeof value[key]) {
+        case 'string':
+          cborValue.vs = value[key];
+          break;
+        case 'number':
+          cborValue.v = value[key];
+          break;
+        case 'boolean':
+          cborValue.vb = value[key];
+          break;
+        default:
+          break;
+      }
+
+      return cborValue;
+    })
+      .map((cborValue) => {
+        if (connectionOptions.useCloudProtocolV2) {
+          return toCloudProtocolV2(cborValue);
+        }
+
+        return cborValue;
+      });
+
+    return sendMessage(propertyInputTopic, CBOR.encode(cborValues, true));
+  }
+
   let cborValue = {
     bt: timestamp || new Date().getTime(),
     n: name,
@@ -439,6 +477,49 @@ const getSenml = (deviceId, name, value, timestamp) => {
     throw new Error('Name must be a valid string');
   }
 
+
+  if (typeof value === 'object') {
+    const objectKeys = Object.keys(value);
+    const senMls = objectKeys.map((key, i) => {
+      const senMl = {
+        n: `${name}:${key}`,
+      };
+
+      if (i === 0) {
+        senMl.bt = timestamp || new Date().getTime();
+
+        if (deviceId) {
+          senMl.bn = `urn:uuid:${deviceId}`;
+        }
+      }
+
+      switch (typeof value[key]) {
+        case 'string':
+          senMl.vs = value[key];
+          break;
+        case 'number':
+          senMl.v = value[key];
+          break;
+        case 'boolean':
+          senMl.vb = value[key];
+          break;
+        default:
+          break;
+      }
+
+      return senMl;
+    })
+      .map((senMl) => {
+        if (connectionOptions.useCloudProtocolV2) {
+          return toCloudProtocolV2(senMl);
+        }
+
+        return senMl;
+      });
+
+    return senMls;
+  }
+
   const senMl = {
     bt: timestamp || new Date().getTime(),
     n: name,
@@ -461,7 +542,6 @@ const getSenml = (deviceId, name, value, timestamp) => {
     default:
       break;
   }
-
 
   if (connectionOptions.useCloudProtocolV2) {
     return toCloudProtocolV2(senMl);
