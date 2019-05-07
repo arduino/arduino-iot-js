@@ -121,15 +121,22 @@ const connect = options => new Promise((resolve, reject) => {
         }
 
         const propertyValue = CBOR.decode(buf);
+        const propertyNameId = 0;
+        const attributeNameId = 1;
+
+        let valueToSend = {};
+        let propertyNameKeyPrevious = '';
         propertyValue.forEach((p) => {
           // Support cbor labels
-          const propertyNameKey = p.n !== undefined ? p.n : p['0'];
+          let propertyNameKey = p.n !== undefined ? p.n : p['0'];
+          const propertyNameKeySplit = propertyNameKey.split(':');
+
           const valueKey = p.v !== undefined ? 'v' : '2';
           const valueStringKey = p.vs !== undefined ? 'vs' : '3';
           const valueBooleanKey = p.vb !== undefined ? 'vb' : '4';
+          let value;
+          propertyNameKey = propertyNameKeySplit[propertyNameId];
           if (propertyCallback[msg.topic][propertyNameKey]) {
-            let value = null;
-
             if (!(p[valueKey] === undefined)) {
               value = p[valueKey];
             } else if (!(p[valueStringKey] === undefined)) {
@@ -137,13 +144,28 @@ const connect = options => new Promise((resolve, reject) => {
             } else if (!(p[valueBooleanKey] === undefined)) {
               value = p[valueBooleanKey];
             }
-
-            propertyCallback[msg.topic][propertyNameKey](value);
+          }
+          if (propertyNameKeyPrevious === '') {
+            propertyNameKeyPrevious = propertyNameKeySplit[propertyNameId];
+          }
+          if (propertyNameKeyPrevious !== propertyNameKey) {
+            propertyCallback[msg.topic][propertyNameKeyPrevious](valueToSend);
+            propertyNameKeyPrevious = propertyNameKey;
+            valueToSend = {};
+          }
+          if (propertyNameKeySplit.length === 1) {
+            valueToSend = value;
+          } else {
+            const attributeName = propertyNameKeySplit[attributeNameId];
+            valueToSend[attributeName] = value;
           }
         });
+        if (valueToSend !== {}) {
+          propertyCallback[msg.topic][propertyNameKeyPrevious](valueToSend);
+        }
       }
     };
-
+    
     client.onConnected = (reconnect) => {
       if (reconnect === true) {
         // This is a re-connection: re-subscribe to all topics subscribed before the
