@@ -2,15 +2,17 @@
     "env": {
       "commonjs": {
         "presets": [
-          ["env", {
-            "useBuiltIns": false
+          ["@babel/preset-env", {
+            "corejs": "3",
+            "useBuiltIns": "usage",
           }]
         ]
       },
       "es": {
         "presets": [
-          ["env", {
-            "useBuiltIns": false,
+          ["@babel/preset-env", {
+            "corejs": "3",
+            "useBuiltIns": "usage",
             "modules": false
           }]
         ]

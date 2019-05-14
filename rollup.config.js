@@ -6,11 +6,13 @@ import uglify from 'rollup-plugin-uglify-es';
 
 const env = process.env.NODE_ENV;
 const config = {
-  format: 'umd',
-  moduleName: 'CreatePlugin',
+  output: {
+    name: 'CreatePlugin',
+    format: 'umd',
+  },
   plugins: [
     nodeResolve({
-      jsnext: true,
+      mainFields: ['module', 'main'],
     }),
     // due to https://github.com/rollup/rollup/wiki/Troubleshooting#name-is-not-exported-by-module
     commonjs({
