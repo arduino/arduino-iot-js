@@ -134,7 +134,7 @@ const connect = options => new Promise((resolve, reject) => {
           const valueKey = p.v !== undefined ? 'v' : '2';
           const valueStringKey = p.vs !== undefined ? 'vs' : '3';
           const valueBooleanKey = p.vb !== undefined ? 'vb' : '4';
-          let value;
+          let value = null;
           propertyNameKey = propertyNameKeySplit[propertyNameId];
           if (propertyCallback[msg.topic][propertyNameKey]) {
             if (!(p[valueKey] === undefined)) {
@@ -148,19 +148,19 @@ const connect = options => new Promise((resolve, reject) => {
           if (propertyNameKeyPrevious === '') {
             propertyNameKeyPrevious = propertyNameKeySplit[propertyNameId];
           }
-          if (propertyNameKeyPrevious !== propertyNameKey) {
+          if (propertyNameKeyPrevious !== propertyNameKey && propertyCallback[msg.topic][propertyNameKeyPrevious]) {
             propertyCallback[msg.topic][propertyNameKeyPrevious](valueToSend);
             propertyNameKeyPrevious = propertyNameKey;
             valueToSend = {};
           }
-          if (propertyNameKeySplit.length === 1) {
+          if (propertyNameKeySplit.length === 1 && value !== null) {
             valueToSend = value;
           } else {
             const attributeName = propertyNameKeySplit[attributeNameId];
             valueToSend[attributeName] = value;
           }
         });
-        if (valueToSend !== {}) {
+        if (valueToSend !== {} && propertyCallback[msg.topic][propertyNameKeyPrevious]) {
           propertyCallback[msg.topic][propertyNameKeyPrevious](valueToSend);
         }
       }
