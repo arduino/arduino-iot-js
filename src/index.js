@@ -153,7 +153,7 @@ const connect = options => new Promise((resolve, reject) => {
             propertyNameKeyPrevious = propertyNameKey;
             valueToSend = {};
           }
-          if (propertyNameKeySplit.length === 1 && value != null) {
+          if (propertyNameKeySplit.length === 1 && value !== null) {
             valueToSend = value;
           } else {
             const attributeName = propertyNameKeySplit[attributeNameId];
