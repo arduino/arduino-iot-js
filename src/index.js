@@ -616,6 +616,16 @@ const onPropertyValue = (thingId, name, cb) => {
   return Promise.resolve(propOutputTopic);
 };
 
+const removePropertyValueCallback = (thingId, name) => {
+  if (!name) {
+    throw new Error('Invalid property name');
+  }
+  const propOutputTopic = `/a/t/${thingId}/e/o`;
+  delete propertyCallback[propOutputTopic][name];
+  return Promise.resolve(propOutputTopic);
+};
+
+
 export default {
   connect,
   disconnect,
@@ -629,6 +639,7 @@ export default {
   sendProperty,
   sendPropertyAsDevice,
   onPropertyValue,
+  removePropertyValueCallback,
   getCborValue,
   getSenml,
   ArduinoCloudError,
