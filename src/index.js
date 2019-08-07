@@ -126,9 +126,10 @@ const connect = options => new Promise((resolve, reject) => {
 
         let valueToSend = {};
         let propertyNameKeyPrevious = '';
+        let propertyNameKey = '';
         propertyValue.forEach((p) => {
           // Support cbor labels
-          let propertyNameKey = p.n !== undefined ? p.n : p['0'];
+          propertyNameKey = p.n !== undefined ? p.n : p['0'];
           const propertyNameKeySplit = propertyNameKey.split(':');
 
           const valueKey = p.v !== undefined ? 'v' : '2';
@@ -148,8 +149,10 @@ const connect = options => new Promise((resolve, reject) => {
           if (propertyNameKeyPrevious === '') {
             propertyNameKeyPrevious = propertyNameKeySplit[propertyNameId];
           }
-          if (propertyNameKeyPrevious !== propertyNameKey && propertyCallback[msg.topic][propertyNameKeyPrevious]) {
-            propertyCallback[msg.topic][propertyNameKeyPrevious](valueToSend);
+          if (propertyNameKeyPrevious !== propertyNameKey) {
+            if (propertyCallback[msg.topic][propertyNameKeyPrevious]) {
+              propertyCallback[msg.topic][propertyNameKeyPrevious](valueToSend);
+            }
             propertyNameKeyPrevious = propertyNameKey;
             valueToSend = {};
           }
@@ -160,8 +163,8 @@ const connect = options => new Promise((resolve, reject) => {
             valueToSend[attributeName] = value;
           }
         });
-        if (valueToSend !== {} && propertyCallback[msg.topic][propertyNameKeyPrevious]) {
-          propertyCallback[msg.topic][propertyNameKeyPrevious](valueToSend);
+        if (valueToSend !== {} && propertyCallback[msg.topic][propertyNameKey]) {
+          propertyCallback[msg.topic][propertyNameKey](valueToSend);
         }
       }
     };
