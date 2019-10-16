@@ -168,19 +168,24 @@ const connect = options => new Promise((resolve, reject) => {
         }
       }
     };
-    
+
     client.onConnected = (reconnect) => {
+      const reconnectPromises = [];
+
       if (reconnect === true) {
         // This is a re-connection: re-subscribe to all topics subscribed before the
         // connection loss
         Object.values(subscribedTopics).forEach((subscribeParams) => {
-          subscribe(subscribeParams.topic, subscribeParams.cb);
+          reconnectPromises.push(() => subscribe(subscribeParams.topic, subscribeParams.cb));
         });
       }
 
-      if (typeof opts.onConnected === 'function') {
-        opts.onConnected(reconnect);
-      }
+      return Promise.all(reconnectPromises)
+        .then(() => {
+          if (typeof opts.onConnected === 'function') {
+            opts.onConnected(reconnect);
+          }
+        });
     };
 
     if (typeof onDisconnect === 'function') {
@@ -307,7 +312,7 @@ const subscribe = (topic, cb) => new Promise((resolve, reject) => {
       connection.topics[topic].push(cb);
       return resolve(topic);
     },
-    onFailure: () => reject(),
+    onFailure: error => reject(new Error(`subscription failed: ${error.errorMessage}`)),
   });
 });
 
@@ -612,8 +617,10 @@ const onPropertyValue = (thingId, name, cb) => {
   if (!propertyCallback[propOutputTopic]) {
     propertyCallback[propOutputTopic] = {};
     propertyCallback[propOutputTopic][name] = cb;
-    subscribe(propOutputTopic, cb);
-  } else if (propertyCallback[propOutputTopic] && !propertyCallback[propOutputTopic][name]) {
+    return subscribe(propOutputTopic, cb);
+  }
+
+  if (propertyCallback[propOutputTopic] && !propertyCallback[propOutputTopic][name]) {
     propertyCallback[propOutputTopic][name] = cb;
   }
   return Promise.resolve(propOutputTopic);
