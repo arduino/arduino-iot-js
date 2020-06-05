@@ -21,7 +21,7 @@ import ArduinoCloud from 'arduino-iot-js';
 //   port: BROKER_PORT,               // Default is 8443
 //   ssl: true/false,                 // Default is true
 //   token: 'YOUR_BEARER_TOKEN'       // Required!   
-//   apiUrl: 'AUTH SERVER URL',       // Default is https://auth.arduino.cc
+//   apiUrl: 'AUTH SERVER URL',       // Default is https://api2.arduino.cc
 //   onDisconnect: message => { /* Disconnection callback */ },
 //   useCloudProtocolV2: true/false,  // Default is false
 // }
