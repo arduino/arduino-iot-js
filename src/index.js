@@ -54,7 +54,7 @@ const subscribedTopics = {};
 const propertyCallback = {};
 const arduinoCloudPort = 8443;
 const arduinoCloudHost = 'wss.iot.arduino.cc';
-const arduinoAuthURL = 'https://auth.arduino.cc';
+const arduinoAuthURL = 'https://api2.arduino.cc';
 
 const getUserId = (apiUrl, token) => fetch(apiUrl, {
   method: 'get',
@@ -102,7 +102,7 @@ const connect = options => new Promise((resolve, reject) => {
     return reject(new Error('no apiUrl parameter is provided'));
   }
 
-  return getUserId(`${opts.apiUrl}/v1/users/byID/me`, options.token).then((res) => {
+  return getUserId(`${opts.apiUrl}/users/v1/users/byID/me`, options.token).then((res) => {
     const clientID = `${res.id}:${new Date().getTime()}`;
     const client = new Paho.Client(opts.host, opts.port, clientID);
     client.topics = {};
