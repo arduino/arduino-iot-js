@@ -1,0 +1,17 @@
+{
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "lib": ["es5", "dom", "es6"],
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationDir": "./dist",
+    "target": "es5",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "ES2015",
+    "moduleResolution": "node",
+    "types": ["node"]
+  }
+}

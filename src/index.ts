@@ -2,7 +2,7 @@
 * Copyright 2018 ARDUINO SA (http://www.arduino.cc/)
 * This file is part of arduino-iot-js.
 * Copyright (c) 2018
-* Authors: Fabrizio Mirabito
+* Authors: Fabrizio Mirabito, Francesco Pirrotta
 *
 * This software is released under:
 * The GNU General Public License, which covers the main part of
@@ -17,19 +17,11 @@
 * a commercial license, send an email to license@arduino.cc.
 *
 */
-export default class ArduinoCloudError extends Error {
-  constructor(code, message) {
-    super(message);
 
-    // Saving class name in the property of our custom error as a shortcut.
-    this.name = this.constructor.name;
+import { ArduinoCloudClient } from "./client/ArduinoCloudClient"
 
-    try {
-      Error.captureStackTrace(this, this.constructor);
-    } catch (error) {
-      // noop
-    }
+const DefaultClient = new ArduinoCloudClient();
 
-    this.code = code;
-  }
-}
+export default DefaultClient;
+export { ArduinoCloudClient };
+export { IArduinoCloudClient } from "./client/IArduinoCloudClient"
