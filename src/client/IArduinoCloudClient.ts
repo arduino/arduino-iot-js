@@ -15,7 +15,7 @@ export type BrowserOptions = {
 };
 
 export type APIOptions = {
-  apiUrl: string;
+  apiUrl?: string;
   clientId: string;
   audience?: string;
   clientSecret: string;

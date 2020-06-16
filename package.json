@@ -18,8 +18,9 @@
     "@arduino/cbor-js": "arduino/cbor-js",
     "jws": "^4.0.0",
     "mqtt": "^4.1.0",
-    "request-promise": "^4.2.5",
-    "rxjs": "^6.5.5"
+    "node-fetch": "^2.6.0",
+    "rxjs": "^6.5.5",
+    "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^13.0.0",
@@ -28,10 +29,11 @@
     "@types/expect.js": "~0.3.29",
     "@types/jws": "^3.2.2",
     "@types/mqtt": "^2.5.0",
+    "@types/node-fetch": "^2.5.7",
     "@types/react": "^16.9.13",
     "@types/react-dom": "^16.9.4",
-    "@types/request-promise": "^4.1.46",
     "@types/sinon": "^7.5.1",
+    "@types/whatwg-fetch": "0.0.33",
     "jest": "^26.0.1",
     "rimraf": "^3.0.2",
     "rollup": "^2.3.3",
@@ -46,7 +48,7 @@
     "lint": "./node_modules/.bin/eslint src",
     "lint-fix": "./node_modules/.bin/eslint --fix src --ext .js",
     "clean": "rimraf lib es",
-    "build": "npm run clean && rollup -c ./rollup.config.js && rollup -c ./rollup.config.lib.js"
+    "build": "npm run clean && rollup -c && rollup -c ./rollup.config.lib.js"
   },
   "repository": {
     "type": "git",

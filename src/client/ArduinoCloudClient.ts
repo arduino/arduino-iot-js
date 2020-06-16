@@ -3,12 +3,11 @@ import { Subscription, Subject, Observable } from "rxjs";
 
 import CBOR from "../cbor";
 import Utils from "../utils";
+import { IConnectionBuilder } from '../builder/IConnectionBuilder';
 import { IConnection, CloudMessage } from "../connection/IConnection";
 import { IArduinoCloudClient, CloudOptions, OnMessageCallback, CloudMessageValue, isBrowserOptions } from "./IArduinoCloudClient";
 
 const NOOP = () => null;
-type ConnectionBuilder = (host: string, port: string | number, options: CloudOptions) => Promise<IConnection>;
-
 export class ArduinoCloudClient implements IArduinoCloudClient {
   private connection: IConnection;
   private subscriptions: { [key: string]: Subscription[] } = {};
@@ -16,8 +15,8 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
 
   private options: CloudOptions = {
     ssl: false,
-    host: this.host,
-    port: this.port,
+    host: 'wss.iot.arduino.cc',
+    port: 8443,
     token: undefined,
     useCloudProtocolV2: false,
     onOffline: NOOP,
@@ -26,16 +25,20 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
   };
 
   public static From(connection: IConnection): ArduinoCloudClient {
-    const client = new ArduinoCloudClient(async () => connection);
+    const client = new ArduinoCloudClient();
     client.init(connection);
     return client;
   }
 
-  constructor(private builder: ConnectionBuilder, private host: string = 'wss.iot.arduino.cc', private port: number = 8443) { }
+  constructor(private builders: IConnectionBuilder[] = []) { }
 
   public async connect(options: CloudOptions): Promise<IConnection> {
     this.options = { ...this.options, ...options };
-    const connection = await this.builder(this.options.host, this.options.port, this.options)
+    const builder = this.builders.find(b => b.canBuild(this.options));
+
+    if (!builder) throw new Error('connection failed: options not valid');
+
+    const connection = await builder.build(this.options)
     return this.init(connection);
   }
 

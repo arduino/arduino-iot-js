@@ -18,9 +18,13 @@
 *
 */
 
-import { APIConnection } from "./connection/APIConnection";
+import fetch from "node-fetch";
+import { HttpClientFactory } from './http/HttpClientFactory';
 import { ArduinoCloudClient } from "./client/ArduinoCloudClient";
+import { APIConnectionBuilder } from "./builder/APIConnectionBuilder";
+import { TokenConnectionBuilder } from "./builder/TokenConnectionBuilder";
 
-const DefaultClient = new ArduinoCloudClient(APIConnection.From);
+const builders = [new TokenConnectionBuilder(), new APIConnectionBuilder(HttpClientFactory.Create(fetch))];
+const DefaultClient = new ArduinoCloudClient(builders);
 
 export default DefaultClient;

@@ -1,3 +1,4 @@
+import jws from 'jws';
 import mqtt from 'mqtt';
 import { Observable, Subject } from "rxjs";
 
@@ -31,11 +32,21 @@ export class Connection implements IConnection {
       else this.messagesFrom(topic, msg).forEach((m) => messages.next(m));
     });
   };
+  
+  public static async From(host: string, port: string | number, token: string): Promise<IConnection> {
+    if (!token) throw new Error('connection failed: you need to provide a valid token');
+    if (!host) throw new Error('connection failed: you need to provide a valid host (broker)');
 
-  public static From(url: string, options: Partial<ConnectionOptions>): IConnection {
+    const userId = jws.decode(token).payload['http://arduino.cc/id'];
+    const options = {
+      clientId: `${userId}:${new Date().getTime()}`,
+      username: userId,
+      password: token,
+    };
+
     const connection = new Connection();
-    connection.client = mqtt.connect(url, { ...BaseConnectionOptions, ...options });
-    return connection;
+    connection.client = mqtt.connect(`wss://${host}:${port}/mqtt`, { ...BaseConnectionOptions, ...options });
+    return connection
   }
 
   public on(event: any, cb: any): IConnection {
