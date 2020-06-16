@@ -46,7 +46,7 @@
     "lint": "./node_modules/.bin/eslint src",
     "lint-fix": "./node_modules/.bin/eslint --fix src --ext .js",
     "clean": "rimraf lib es",
-    "build": "npm run clean && rollup -c && rollup -c ./rollup.config.lib.js"
+    "build": "npm run clean && rollup -c ./rollup.config.js && rollup -c ./rollup.config.lib.js"
   },
   "repository": {
     "type": "git",
