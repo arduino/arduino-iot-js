@@ -52,7 +52,7 @@ function toCloudProtocolV2(cborValue: CBORValue): CBORValue {
   return cloudV2CBORValue;
 }
 
-function parse(value: any, name: string, timestamp: number, deviceId: string): CBORValue {
+function parse(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): CBORValue {
   const parsed: CBORValue = {
     n: name,
     bt: timestamp !== -1 ? (timestamp || new Date().getTime()) : undefined,

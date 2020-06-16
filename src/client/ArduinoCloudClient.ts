@@ -120,7 +120,7 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
         this.subscriptions[topic] = this.subscriptions[topic] = [];
         this.subscriptions[topic].push(
           this.messagesFrom(topic)
-            .subscribe(v => cb(v.value as any)));
+            .subscribe(v => cb(v.value as T)));
 
         return resolve();
       } catch (err) {
@@ -177,7 +177,7 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     this.subscriptions[topic].push(
       this.messagesFrom(topic)
         .pipe(filter(v => v.propertyName === name))
-        .subscribe(v => cb(v.value as any)));
+        .subscribe(v => cb(v.value as T)));
   }
 
   private messagesFrom(topic: string): Observable<CloudMessage> {

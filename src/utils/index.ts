@@ -1,3 +1,5 @@
+import { CloudMessageValue } from "../client/IArduinoCloudClient";
+
 class ArduinoCloudError extends Error {
   constructor(public code: number, message: string) {
     super(message);
@@ -9,23 +11,23 @@ class ArduinoCloudError extends Error {
   }
 }
 
-function isObject(value: any): value is object {
+function isObject(value: CloudMessageValue): value is object {
   return typeof (value) === "object";
 }
 
-function isNumber(value: any): value is number {
+function isNumber(value: CloudMessageValue): value is number {
   return typeof (value) === "number";
 }
 
-function isString(value: any): value is string {
+function isString(value: CloudMessageValue): value is string {
   return typeof (value) === "string";
 }
 
-function isBoolean(value: any): value is boolean {
+function isBoolean(value: CloudMessageValue): value is boolean {
   return typeof (value) === "boolean";
 }
 
-function isArray<T>(value: any): value is T[] {
+function isArray<T>(value: CloudMessageValue): value is T[] {
   return Array.isArray(value);
 }
 
