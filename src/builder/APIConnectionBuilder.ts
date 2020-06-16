@@ -20,12 +20,12 @@ export class APIConnectionBuilder implements IConnectionBuilder {
   public async build(options: APIOptions & BaseCloudOptions): Promise<IConnection> {
     const { apiUrl = "https://api2.arduino.cc/iot/v1/clients/token" } = options;
     const headers = { 'content-type': 'application/x-www-form-urlencoded' };
-    const body = {
-      grant_type: 'client_credentials',
-      client_id: options.clientId,
-      client_secret: options.clientSecret,
-      audience: options.audience || 'https://api2.arduino.cc/iot',
-    }
+
+    const body = new URLSearchParams();
+    body.append("grant_type", 'client_credentials');
+    body.append("client_id", options.clientId);
+    body.append("client_secret", options.clientSecret);
+    body.append("audience", options.audience || 'https://api2.arduino.cc/iot');
 
     const { access_token } = await this.client.post<AccessResponse>(apiUrl, body, headers);
     return Connection.From(options.host, options.port, access_token)
