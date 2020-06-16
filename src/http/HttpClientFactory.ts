@@ -17,7 +17,7 @@ export class HttpClientFactory {
         const contentType = responseHeaders['content-type'] || '';
         const payload = contentType.match('json') && !!text ? JSON.parse(text) : text;
 
-        if (response.status >= 400) throw new Error(JSON.stringify({ payload, status: response.status }));
+        if (response.status >= 400) throw new Error(encodeURIComponent(JSON.stringify({ payload, status: response.status })));
         else return payload;
       }
 

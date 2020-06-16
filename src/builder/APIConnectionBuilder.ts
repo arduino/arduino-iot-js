@@ -18,7 +18,6 @@ export class APIConnectionBuilder implements IConnectionBuilder {
   }
 
   public async build(options: APIOptions & BaseCloudOptions): Promise<IConnection> {
-
     const { apiUrl = "https://api2.arduino.cc/iot/v1/clients/token" } = options;
     const headers = { 'content-type': 'application/x-www-form-urlencoded' };
     const body = {
