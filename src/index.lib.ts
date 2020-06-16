@@ -18,9 +18,9 @@
 *
 */
 
+import { APIConnection } from "./connection/APIConnection";
 import { ArduinoCloudClient } from "./client/ArduinoCloudClient";
-import { BrowserConnection } from "./connection/BrowserConnection";
 
-const DefaultClient = new ArduinoCloudClient(BrowserConnection.From);
+const DefaultClient = new ArduinoCloudClient(APIConnection.From);
 
 export default DefaultClient;

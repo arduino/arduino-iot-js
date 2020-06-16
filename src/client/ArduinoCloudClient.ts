@@ -1,46 +1,54 @@
-import CBOR from '@arduino/cbor-js';
 import { filter } from "rxjs/operators";
 import { Subscription, Subject, Observable } from "rxjs";
 
-import * as Utils from "../utils/Utils";
-import { Connection, CloudMessage } from "../connection/Connection";
-import { IArduinoCloudClient, ConnectionOptions, OnMessageCallback } from "./IArduinoCloudClient";
+import CBOR from "../cbor";
+import Utils from "../utils";
+import { IConnection, CloudMessage } from "../connection/IConnection";
+import { IArduinoCloudClient, CloudOptions, OnMessageCallback, CloudMessageValue, isBrowserOptions } from "./IArduinoCloudClient";
 
-const EMPTY = () => null;
+const NOOP = () => null;
+type ConnectionBuilder = (host: string, port: string | number, options: CloudOptions) => Promise<IConnection>;
 
 export class ArduinoCloudClient implements IArduinoCloudClient {
-  private connection: Connection;
+  private connection: IConnection;
   private subscriptions: { [key: string]: Subscription[] } = {};
   private callbacks: { [key: string]: OnMessageCallback<any>[] } = {};
 
-  private options: ConnectionOptions = {
+  private options: CloudOptions = {
+    ssl: false,
     host: this.host,
     port: this.port,
-    ssl: false,
     token: undefined,
-    onOffline: undefined,
-    onDisconnect: undefined,
-    onConnected: undefined,
     useCloudProtocolV2: false,
+    onOffline: NOOP,
+    onConnected: NOOP,
+    onDisconnect: NOOP,
   };
 
-  constructor(private host: string = 'wss.iot.arduino.cc', private port: number = 8443) { }
+  public static From(connection: IConnection): ArduinoCloudClient {
+    const client = new ArduinoCloudClient(async () => connection);
+    client.init(connection);
+    return client;
+  }
 
-  public connect(options: ConnectionOptions): Promise<Connection> {
-    return new Promise<Connection>((resolve, reject) => {
-      const { host, port, token } = this.options = { ...this.options, ...options };
-      const { onConnected = EMPTY, onOffline = () => EMPTY, onDisconnect = () => EMPTY } = this.options;
+  constructor(private builder: ConnectionBuilder, private host: string = 'wss.iot.arduino.cc', private port: number = 8443) { }
 
-      if (this.connection) return reject(new Error('connection failed: connection already open'));
-      if (!token) return reject(new Error('connection failed: you need to provide a valid token'));
-      if (!host) return reject(new Error('connection failed: you need to provide a valid host (broker)'));
+  public async connect(options: CloudOptions): Promise<IConnection> {
+    this.options = { ...this.options, ...options };
+    const connection = await this.builder(this.options.host, this.options.port, this.options)
+    return this.init(connection);
+  }
 
-      this.connection = Connection.From(host, port, token);
-      this.connection.on('offline', () => onOffline());
-      this.connection.on('disconnect', () => onDisconnect());
+  private async init(connection: IConnection): Promise<IConnection> {
+    if (this.connection) throw new Error('connection failed: connection already open');
+    this.connection = connection;
+
+    return new Promise<IConnection>(async (resolve, reject) => {
+      this.connection.on('offline', () => this.options.onOffline());
+      this.connection.on('disconnect', () => this.options.onDisconnect());
       this.connection.on('error', (err) => reject(new Utils.ArduinoCloudError(5, err.toString())));
       this.connection.on('connect', () => {
-        onConnected();
+        this.options.onConnected();
         return resolve(this.connection);
       });
     });
@@ -90,7 +98,7 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
           callbacks.forEach(cb => this.subscribe(topic, cb));
         })
 
-        const { onConnected = EMPTY } = this.options;
+        const { onConnected = NOOP } = this.options;
         onConnected();
         return;
       } catch (error) {
@@ -100,7 +108,7 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     }
   }
 
-  public subscribe<T>(topic: string, cb: OnMessageCallback<T>): Promise<void> {
+  public subscribe<T extends CloudMessageValue>(topic: string, cb: OnMessageCallback<T>): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         this.callbacks[topic] = this.callbacks[topic] = [];
@@ -135,7 +143,7 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     });
   }
 
-  public openCloudMonitor<T>(deviceId: string, cb: OnMessageCallback<T>): Promise<void> {
+  public openCloudMonitor<T extends CloudMessageValue>(deviceId: string, cb: OnMessageCallback<T>): Promise<void> {
     return this.subscribe(`/a/d/${deviceId}/s/o`, cb);
   }
 
@@ -147,19 +155,13 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     return this.unsubscribe(`/a/d/${deviceId}/s/o`);
   }
 
-  public async sendProperty<T>(thingId: string, name: string, value: T, timestamp: number): Promise<void> {
-    if (timestamp && !Number.isInteger(timestamp)) throw new Error('Timestamp must be Integer');
-    if (name === undefined || typeof name !== 'string') throw new Error('Name must be a valid string');
-
+  public async sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp: number): Promise<void> {
     const topic = `/a/t/${thingId}/e/i`;
-    if (Utils.isObject(value)) return this.sendObjectProperty(topic, value, timestamp);
-
-    let cborValue = this.CBORFrom(value, name, timestamp);
-    if (this.options.useCloudProtocolV2) cborValue = Utils.toCloudProtocolV2(cborValue);
-    return this.sendMessage(topic, CBOR.encode([cborValue], true));
+    const values = CBOR.getSenML(name, value, timestamp, this.options.useCloudProtocolV2, null);
+    return this.sendMessage(topic, CBOR.encode(Utils.isArray(values) ? values : [values], true));
   }
 
-  public async onPropertyValue<T>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void> {
+  public async onPropertyValue<T extends CloudMessageValue>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void> {
     if (!name) throw new Error('Invalid property name');
     if (typeof cb !== 'function') throw new Error('Invalid callback');
 
@@ -197,123 +199,4 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     }
     return subject;
   }
-
-  private CBORFrom(value: any, name: string, timestamp: number): CBOR.CBORValue {
-    const parsed: CBOR.CBORValue = {
-      n: name,
-      bt: timestamp !== -1 ? (timestamp || new Date().getTime()) : undefined,
-    };
-
-    if (Utils.isNumber(value)) parsed.v = value;
-    if (Utils.isString(value)) parsed.vs = value;
-    if (Utils.isBoolean(value)) parsed.vb = value;
-
-    return parsed;
-  }
-
-  private async sendObjectProperty(topic: string, value: object, timestamp: number) {
-    const values: CBOR.CBORValue[] = Object.keys(value)
-      .map((key, i) => this.CBORFrom(value[key], `${name}:${key}`, i === 0 ? timestamp : -1))
-      .map((cborValue) => this.options.useCloudProtocolV2 ? Utils.toCloudProtocolV2(cborValue) : cborValue);
-
-    return this.sendMessage(topic, CBOR.encode(values, true));
-  }
-
-
-  getSenml(deviceId, name, value, timestamp) {
-    if (timestamp && !Number.isInteger(timestamp)) {
-      throw new Error('Timestamp must be Integer');
-    }
-
-    if (name === undefined || typeof name !== 'string') {
-      throw new Error('Name must be a valid string');
-    }
-
-
-    if (typeof value === 'object') {
-      const objectKeys = Object.keys(value);
-      const senMls: any[] = objectKeys.map((key, i) => {
-        const senMl: any = {
-          n: `${name}:${key}`,
-        };
-
-        if (i === 0) {
-          senMl.bt = timestamp || new Date().getTime();
-
-          if (deviceId) {
-            senMl.bn = `urn:uuid:${deviceId}`;
-          }
-        }
-
-        switch (typeof value[key]) {
-          case 'string':
-            senMl.vs = value[key];
-            break;
-          case 'number':
-            senMl.v = value[key];
-            break;
-          case 'boolean':
-            senMl.vb = value[key];
-            break;
-          default:
-            break;
-        }
-
-        return senMl;
-      })
-        .map((senMl) => {
-          if (this.options.useCloudProtocolV2) {
-            return Utils.toCloudProtocolV2(senMl);
-          }
-
-          return senMl;
-        });
-
-      return senMls;
-    }
-
-    const senMl: any = {
-      bt: timestamp || new Date().getTime(),
-      n: name,
-    };
-
-    if (deviceId) {
-      senMl.bn = `urn:uuid:${deviceId}`;
-    }
-
-    switch (typeof value) {
-      case 'string':
-        senMl.vs = value;
-        break;
-      case 'number':
-        senMl.v = value;
-        break;
-      case 'boolean':
-        senMl.vb = value;
-        break;
-      default:
-        break;
-    }
-
-    if (this.options.useCloudProtocolV2) {
-      return Utils.toCloudProtocolV2(senMl);
-    }
-
-    return senMl;
-  };
-
-  getCborValue(senMl) {
-    const cborEncoded = CBOR.encode(senMl);
-    return this.arrayBufferToBase64(cborEncoded);
-  };
-
-  arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i += 1) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-  };
 }

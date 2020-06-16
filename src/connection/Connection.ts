@@ -1,81 +1,97 @@
-import jws from 'jws';
 import mqtt from 'mqtt';
-import CBOR from '@arduino/cbor-js';
 import { Observable, Subject } from "rxjs";
-import { toArrayBuffer } from "../utils/Utils";
 
-export type CloudMessageValue = string | number | boolean | object;
-export type CloudMessage = { topic: string; propertyName?: string; value: CloudMessageValue };
-export type Connection = mqtt.MqttClient & { messages?: Observable<CloudMessage> };
+import CBOR from '../cbor';
+import Utils from "../utils";
+import { CloudMessageValue } from "../client/IArduinoCloudClient";
+import { IConnection, CloudMessage, ConnectionOptions } from "./IConnection";
 
-export namespace Connection {
-  export function From(host: string, port: string | number, token: string): Connection {
-    const connection: Connection = mqtt.connect(`wss://${host}:${port}/mqtt`, optionsFrom(token));
-    const messages = connection.messages = new Subject<CloudMessage>();
+const BaseConnectionOptions: Partial<ConnectionOptions> = {
+  clean: true,
+  keepalive: 30,
+  properties: {},
+  protocolVersion: 4,
+  connectTimeout: 30000,
+}
 
-    connection.on('message', (topic, msg) => {
+export class Connection implements IConnection {
+  public messages?: Observable<CloudMessage>;
+  private _client: mqtt.MqttClient;
+
+  private get client(): mqtt.MqttClient {
+    return this._client;
+  }
+
+  private set client(client: mqtt.MqttClient) {
+    this._client = client;
+    const messages = this.messages = new Subject<CloudMessage>();
+
+    this._client.on('message', (topic, msg) => {
       if (topic.indexOf('/s/o') > -1) messages.next({ topic, value: msg.toString() });
-      else messagesFrom(topic, msg).forEach((m) => messages.next(m));
+      else this.messagesFrom(topic, msg).forEach((m) => messages.next(m));
     });
+  };
 
+  public static From(url: string, options: Partial<ConnectionOptions>): IConnection {
+    const connection = new Connection();
+    connection.client = mqtt.connect(url, { ...BaseConnectionOptions, ...options });
     return connection;
   }
 
-  function messagesFrom(topic: string, msg: Buffer): CloudMessage[] {
+  public on(event: any, cb: any): IConnection {
+    this.client.on(event, cb);
+    return this;
+  }
+  public end(force?: boolean, opts?: Object, cb?: mqtt.CloseCallback): IConnection {
+    this.client.end(force, opts, cb);
+    return this;
+  }
+  public reconnect(opts?: mqtt.IClientReconnectOptions): IConnection {
+    this.client.reconnect(opts);
+    return this;
+  }
+
+  public unsubscribe(topic: string | string[], opts?: any, callback?: any): IConnection {
+    this.client.subscribe(topic, opts, callback);
+    return this;
+  }
+
+  public publish(topic: any, message: any, opts?: any, callback?: any): IConnection {
+    this.client.publish(topic, message, opts, callback);
+    return this;
+  }
+
+  public subscribe(topic: any, callback?: any): IConnection {
+    this.client.subscribe(topic, callback);
+    return this;
+  }
+
+  private messagesFrom(topic: string, msg: Buffer): CloudMessage[] {
     let current = '';
     let attribute = '';
     let previous = '';
     let valueToSend: CloudMessageValue = {};
-  
+
     const messages: CloudMessage[] = [];
-    const properties = CBOR.decode(toArrayBuffer(msg));
-  
+    const properties = CBOR.decode(Utils.toArrayBuffer(msg));
+
     properties.forEach((p) => {
-      const value = valueFrom(p);
-      [current, attribute] = nameFrom(p).split(':');
+      const value = CBOR.valueFrom(p);
+      [current, attribute] = CBOR.nameFrom(p).split(':');
       if (previous === '') previous = current;
-  
+
       if (previous !== current) {
         messages.push({ topic, propertyName: previous, value: valueToSend })
         previous = current;
         valueToSend = {};
       }
-  
+
       if (attribute) valueToSend[attribute] = value;
       else valueToSend = value
     });
-  
+
     if (valueToSend !== {}) messages.push({ topic, propertyName: current, value: valueToSend })
-  
+
     return messages;
   }
-
-  function optionsFrom(token: string): mqtt.IClientOptions {
-    const userId = jws.decode(token).payload['http://arduino.cc/id'];
-    return {
-      clientId: `${userId}:${new Date().getTime()}`,
-      username: userId,
-      password: token,
-      properties: {},
-      protocolVersion: 4,
-      connectTimeout: 30000,
-      keepalive: 30,
-      clean: true,
-    };
-  };
-}
-
-
-function isPropertyValue(message: CBOR.CBORValue | string[]): message is CBOR.CBORValue {
-  return !!(message as CBOR.CBORValue).n;
-}
-
-function valueFrom(message: CBOR.CBORValue | string[]): CloudMessageValue {
-  return isPropertyValue(message)
-    ? message.v || message.vs || message.vb
-    : message[2] || message[3] || message[4];
-}
-
-function nameFrom(property: CBOR.CBORValue | string[]): string {
-  return isPropertyValue(property) ? property.n : property[0]
 }

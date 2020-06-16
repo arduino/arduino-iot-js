@@ -1,33 +1,49 @@
-import { Connection } from "../connection/Connection";
+import { IConnection } from "../connection/IConnection";
 
-export type ConnectionOptions = {
+export type BaseCloudOptions = {
   host?: string;
   port?: string | number;
   ssl?: boolean;
-  token: string;
-  apiUrl?: string;
   onOffline?: () => void;
   onConnected?: () => void;
-  useCloudProtocolV2?: boolean;
   onDisconnect?: (message?: any) => void;
+  useCloudProtocolV2?: boolean;
+}
+
+export type BrowserOptions = {
+  token: string;
 };
 
-export type OnMessageCallback<T> = (message: T) => void;
+export type APIOptions = {
+  apiUrl: string;
+  clientId: string;
+  audience?: string;
+  clientSecret: string;
+};
+
+export type CloudOptions = (BrowserOptions | APIOptions) & BaseCloudOptions;
+
+export function isBrowserOptions(options: CloudOptions): options is BrowserOptions {
+  return !!(options as BrowserOptions).token;
+}
+
+export type CloudMessageValue = string | number | boolean | object;
+export type OnMessageCallback<T extends CloudMessageValue> = (message: T) => void;
 
 export interface IArduinoCloudClient {
-  connect(options: ConnectionOptions): Promise<Connection>;
+  connect(options: CloudOptions): Promise<IConnection>;
   reconnect(): Promise<void>;
   disconnect(): Promise<void>;
   updateToken(newToken: string): Promise<void>;
 
-  subscribe<T>(topic: string, cb: OnMessageCallback<T>): Promise<void>;
+  subscribe<T extends CloudMessageValue>(topic: string, cb: OnMessageCallback<T>): Promise<void>;
   unsubscribe(topic: string): Promise<void>;
   sendMessage(topic: string, message: ArrayBuffer): Promise<void>;
 
-  openCloudMonitor<T>(deviceId: string, cb: OnMessageCallback<T>): Promise<void>;
+  openCloudMonitor<T extends CloudMessageValue>(deviceId: string, cb: OnMessageCallback<T>): Promise<void>;
   writeCloudMonitor(deviceId: string, message: ArrayBuffer): Promise<void>;
   closeCloudMonitor(deviceId: string): Promise<void>;
 
-  sendProperty<T>(thingId: string, name: string, value: T, timestamp: number): Promise<void>;
-  onPropertyValue<T>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void>;
+  sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp: number): Promise<void>;
+  onPropertyValue<T extends CloudMessageValue>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void>;
 }

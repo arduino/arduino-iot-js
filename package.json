@@ -3,12 +3,10 @@
   "version": "0.5.2",
   "license": "GPLv3",
   "description": "JS module providing Arduino Create IoT Cloud Connection",
-  "source": "src/index.ts",
   "main": "./lib/index.js",
   "module": "./es/index.js",
   "jsnext:main": "es/index.js",
   "files": [
-    "dist",
     "lib",
     "es",
     "src"
@@ -20,6 +18,7 @@
     "@arduino/cbor-js": "arduino/cbor-js",
     "jws": "^4.0.0",
     "mqtt": "^4.1.0",
+    "request-promise": "^4.2.5",
     "rxjs": "^6.5.5"
   },
   "devDependencies": {
@@ -31,6 +30,7 @@
     "@types/mqtt": "^2.5.0",
     "@types/react": "^16.9.13",
     "@types/react-dom": "^16.9.4",
+    "@types/request-promise": "^4.1.46",
     "@types/sinon": "^7.5.1",
     "jest": "^26.0.1",
     "rimraf": "^3.0.2",
@@ -39,15 +39,14 @@
     "rollup-plugin-sizes": "^1.0.2",
     "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-typescript2": "^0.27.1",
-    "typescript": "^3.9.5",
-    "whatwg-fetch": "^3.0.0"
+    "typescript": "^3.9.5"
   },
   "scripts": {
     "test": "npm run build && jest --config ./jest.config.js",
     "lint": "./node_modules/.bin/eslint src",
     "lint-fix": "./node_modules/.bin/eslint --fix src --ext .js",
-    "clean": "rimraf lib dist es",
-    "build": "npm run clean && rollup -c"
+    "clean": "rimraf lib es",
+    "build": "npm run clean && rollup -c && rollup -c ./rollup.config.lib.js"
   },
   "repository": {
     "type": "git",
