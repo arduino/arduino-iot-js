@@ -75,7 +75,7 @@ function getSenML(name: string, value: CloudMessageValue, timestamp: number, use
 
   if (Utils.isObject(value)) return Object.keys(value)
     .map((key, i) => parse(value[key], `${name}:${key}`, i === 0 ? timestamp : -1, deviceId))
-    .map((cborValue) => this.options.useCloudProtocolV2 ? toCloudProtocolV2(cborValue) : cborValue);
+    .map((cborValue) => useCloudProtocolV2 ? toCloudProtocolV2(cborValue) : cborValue);
 
   let cborValue = parse(value, name, timestamp, deviceId);
   if (useCloudProtocolV2) cborValue = toCloudProtocolV2(cborValue);
