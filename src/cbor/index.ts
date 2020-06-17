@@ -53,16 +53,17 @@ function toCloudProtocolV2(cborValue: CBORValue): CBORValue {
 }
 
 function parse(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): CBORValue {
-  const parsed: CBORValue = { n: name };
+  const parsed: CBORValue = {};
   if (timestamp !== -1) parsed.bt = timestamp || new Date().getTime()
-
-  if (Utils.isNumber(value)) parsed.v = value;
-  if (Utils.isString(value)) parsed.vs = value;
-  if (Utils.isBoolean(value)) parsed.vb = value;
+  parsed.n = name;
 
   if (deviceId) {
     parsed.bn = `urn:uuid:${deviceId}`;
   }
+
+  if (Utils.isNumber(value)) parsed.v = value;
+  if (Utils.isString(value)) parsed.vs = value;
+  if (Utils.isBoolean(value)) parsed.vb = value;
 
   return parsed;
 }
@@ -72,7 +73,7 @@ function getSenML(name: string, value: CloudMessageValue, timestamp: number, use
   if (name === undefined || typeof name !== 'string') throw new Error('Name must be a valid string');
 
   if (Utils.isObject(value)) return Object.keys(value)
-    .map((key, i) => parse(value[key], `${name}:${key}`, i === 0 ? timestamp : -1, deviceId))
+    .map((key, i) => parse(value[key], `${name}:${key}`, i === 0 ? timestamp : -1, i === 0 ? deviceId : undefined))
     .map((cborValue) => useCloudProtocolV2 ? toCloudProtocolV2(cborValue) : cborValue);
 
   let cborValue = parse(value, name, timestamp, deviceId);

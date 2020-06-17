@@ -20,9 +20,6 @@
 const ArduinoCloud = require('../dist/index.js').default;
 const { CBOR } = require('../dist/index.js');
 
-const clientId = "t6GbPJHC6nyCnBBxgOncCribTbRwVLNY";
-const clientSecret = "RBB3CRk7vxsba8lcVWls6u2JWxoGfnHYwEJkGBSQNmMbWOlXjhSllwDLSssCbEYU";
-
 const deviceId = '1f4ced70-53ad-4b29-b221-1b0abbdfc757';
 const thingId = '2cea8542-d472-4464-859c-4ef4dfc7d1d3';
 const propertyIntName = 'integer';
@@ -41,7 +38,7 @@ describe('Test the library basic functionalities', () => {
   it('ArduinoCloud connection', (done) => {
     /* global token */
     ArduinoCloud.connect({
-      clientId, clientSecret,
+      token,
       onDisconnect: (message) => {
         if (message.errorCode !== 0) {
           throw Error(message);
@@ -57,7 +54,7 @@ describe('Test the library basic functionalities', () => {
 
   describe("when connected", () => {
     beforeEach((done) => {
-      ArduinoCloud.connect({ clientId, clientSecret }).then(() => done());
+      ArduinoCloud.connect({ token }).then(() => done());
     })
 
     it('Property name must be a string in sendProperty', (done) => {
