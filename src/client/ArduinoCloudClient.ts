@@ -5,7 +5,7 @@ import CBOR from "../cbor";
 import Utils from "../utils";
 import { IConnectionBuilder } from '../builder/IConnectionBuilder';
 import { IConnection, CloudMessage } from "../connection/IConnection";
-import { IArduinoCloudClient, CloudOptions, OnMessageCallback, CloudMessageValue, isBrowserOptions } from "./IArduinoCloudClient";
+import { IArduinoCloudClient, CloudOptions, OnMessageCallback, CloudMessageValue } from "./IArduinoCloudClient";
 
 const NOOP = () => null;
 export class ArduinoCloudClient implements IArduinoCloudClient {
@@ -137,11 +137,12 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     });
   }
 
-  public sendMessage(topic: string, message: ArrayBuffer): Promise<void> {
+  public sendMessage(topic: string, message: string | ArrayBuffer): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!this.connection) return reject(new Error('send message failed: no connection found'));
 
-      this.connection.publish(topic, Utils.toBuffer(message), { qos: 1, retain: false });
+      const body = Utils.isString(message) ? Buffer.from(message, 'utf8') : message;
+      this.connection.publish(topic, Utils.toBuffer(body), { qos: 1, retain: false });
       return resolve();
     });
   }
@@ -150,15 +151,15 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     return this.subscribe(`/a/d/${deviceId}/s/o`, cb);
   }
 
-  public writeCloudMonitor(deviceId: string, message: ArrayBuffer): Promise<void> {
+  public writeCloudMonitor(deviceId: string, message: string | ArrayBuffer): Promise<void> {
     return this.sendMessage(`/a/d/${deviceId}/s/i`, message);
   }
 
-  public closeCloudMonitor<T>(deviceId: string): Promise<void> {
+  public closeCloudMonitor(deviceId: string): Promise<void> {
     return this.unsubscribe(`/a/d/${deviceId}/s/o`);
   }
 
-  public async sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp: number): Promise<void> {
+  public async sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp: number = new Date().getTime()): Promise<void> {
     const topic = `/a/t/${thingId}/e/i`;
     const values = CBOR.getSenML(name, value, timestamp, this.options.useCloudProtocolV2, null);
     return this.sendMessage(topic, CBOR.encode(Utils.isArray(values) ? values : [values], true));
@@ -185,7 +186,6 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
 
     let subscription: Subscription;
     const subject = new Subject<CloudMessage>();
-
     this.connection.subscribe(topic, (err) => {
       if (err) throw new Error(`subscription failed: ${err.toString()}`);
 
@@ -196,7 +196,6 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
 
     const originalMethod = subject.unsubscribe;
     subject.unsubscribe = () => {
-
       subscription.unsubscribe();
       originalMethod();
     }

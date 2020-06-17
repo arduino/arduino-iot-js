@@ -49,7 +49,7 @@ function toBuffer(ab: ArrayBuffer): Buffer {
   return buffer;
 }
 
-function arrayBufferToBase64(buf: Buffer): string {
+function arrayBufferToBase64(buf: ArrayBuffer): string {
   let binary = '';
   const bytes = new Uint8Array(buf);
   const len = bytes.byteLength;

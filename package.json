@@ -27,6 +27,7 @@
     "@rollup/plugin-node-resolve": "^8.0.1",
     "@rollup/plugin-url": "^5.0.1",
     "@types/expect.js": "~0.3.29",
+    "@types/jest": "^26.0.0",
     "@types/jws": "^3.2.2",
     "@types/mqtt": "^2.5.0",
     "@types/node-fetch": "^2.5.7",
@@ -47,7 +48,7 @@
     "test": "npm run build && jest --config ./jest.config.js",
     "lint": "./node_modules/.bin/eslint src",
     "lint-fix": "./node_modules/.bin/eslint --fix src --ext .js",
-    "clean": "rimraf lib es",
+    "clean": "rimraf lib es dist",
     "build": "npm run clean && rollup -c && rollup -c ./rollup.config.lib.js"
   },
   "repository": {
@@ -62,6 +63,7 @@
     "iot"
   ],
   "contributors": [
-    "Fabrizio Mirabito <f.mirabito@arduino.cc>"
+    "Fabrizio Mirabito <f.mirabito@arduino.cc>",
+    "Francesco Pirrotta <f.pirrotta@arduino.cc>"
   ]
 }

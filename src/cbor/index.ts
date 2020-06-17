@@ -1,4 +1,4 @@
-import { encode, decode, CBORValue }  from '@arduino/cbor-js';
+import { encode, decode, CBORValue } from '@arduino/cbor-js';
 
 import Utils from "../utils";
 import { CloudMessageValue } from "../client/IArduinoCloudClient";
@@ -19,7 +19,7 @@ function nameFrom(property: CBORValue | string[]): string {
 
 function toString(value: CBORValue[]): string {
   const encoded = encode(value);
-  return this.arrayBufferToBase64(encoded);
+  return Utils.arrayBufferToBase64(encoded);
 };
 
 function toCloudProtocolV2(cborValue: CBORValue): CBORValue {
@@ -53,10 +53,8 @@ function toCloudProtocolV2(cborValue: CBORValue): CBORValue {
 }
 
 function parse(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): CBORValue {
-  const parsed: CBORValue = {
-    n: name,
-    bt: timestamp !== -1 ? (timestamp || new Date().getTime()) : undefined,
-  };
+  const parsed: CBORValue = { n: name };
+  if (timestamp !== -1) parsed.bt = timestamp || new Date().getTime()
 
   if (Utils.isNumber(value)) parsed.v = value;
   if (Utils.isString(value)) parsed.vs = value;

@@ -12,6 +12,6 @@
     "emitDecoratorMetadata": true,
     "module": "ES2015",
     "moduleResolution": "node",
-    "types": ["node"]
+    "types": ["node", "jest"]
   }
 }
