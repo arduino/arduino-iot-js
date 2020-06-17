@@ -2,7 +2,7 @@ import jws from 'jws';
 import mqtt from 'mqtt';
 import { Observable, Subject } from "rxjs";
 
-import CBOR from '../cbor';
+import SenML from '../senML';
 import Utils from "../utils";
 import { CloudMessageValue } from "../client/IArduinoCloudClient";
 import { IConnection, CloudMessage, ConnectionOptions } from "./IConnection";
@@ -84,11 +84,11 @@ export class Connection implements IConnection {
     let valueToSend: CloudMessageValue = {};
 
     const messages: CloudMessage[] = [];
-    const properties = CBOR.decode(Utils.toArrayBuffer(msg));
+    const properties = SenML.CBOR.decode(Utils.toArrayBuffer(msg));
 
     properties.forEach((p) => {
-      const value = CBOR.valueFrom(p);
-      [current, attribute] = CBOR.nameFrom(p).split(':');
+      const value = SenML.valueFrom(p);
+      [current, attribute] = SenML.nameFrom(p).split(':');
       if (previous === '') previous = current;
 
       if (previous !== current) {

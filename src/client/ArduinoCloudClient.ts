@@ -1,7 +1,7 @@
 import { filter } from "rxjs/operators";
 import { Subscription, Subject, Observable } from "rxjs";
 
-import CBOR from "../cbor";
+import SenML from "../senML";
 import Utils from "../utils";
 import { IConnectionBuilder } from '../builder/IConnectionBuilder';
 import { IConnection, CloudMessage } from "../connection/IConnection";
@@ -161,8 +161,8 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
 
   public async sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp: number = new Date().getTime()): Promise<void> {
     const topic = `/a/t/${thingId}/e/i`;
-    const values = CBOR.getSenML(name, value, timestamp, this.options.useCloudProtocolV2, null);
-    return this.sendMessage(topic, CBOR.encode(Utils.isArray(values) ? values : [values], true));
+    const values = SenML.parse(name, value, timestamp, this.options.useCloudProtocolV2, null);
+    return this.sendMessage(topic, SenML.CBOR.encode(Utils.isArray(values) ? values : [values], true));
   }
 
   public async onPropertyValue<T extends CloudMessageValue>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void> {

@@ -1,28 +1,28 @@
-import { encode, decode, CBORValue } from '@arduino/cbor-js';
+import CBOR, { SenML } from '@arduino/cbor-js';
 
 import Utils from "../utils";
 import { CloudMessageValue } from "../client/IArduinoCloudClient";
 
-function isPropertyValue(message: CBORValue | string[]): message is CBORValue {
-  return !!(message as CBORValue).n;
+function isPropertyValue(message: SenML | string[]): message is SenML {
+  return !!(message as SenML).n;
 }
 
-function valueFrom(message: CBORValue | string[]): CloudMessageValue {
+function valueFrom(message: SenML | string[]): CloudMessageValue {
   return isPropertyValue(message)
     ? message.v || message.vs || message.vb
     : message[2] || message[3] || message[4];
 }
 
-function nameFrom(property: CBORValue | string[]): string {
+function nameFrom(property: SenML | string[]): string {
   return isPropertyValue(property) ? property.n : property[0]
 }
 
-function toString(value: CBORValue[]): string {
-  const encoded = encode(value);
+function toString(value: SenML[]): string {
+  const encoded = CBOR.encode(value);
   return Utils.arrayBufferToBase64(encoded);
 };
 
-function toCloudProtocolV2(cborValue: CBORValue): CBORValue {
+function toCloudProtocolV2(cborValue: SenML): SenML {
   const cloudV2CBORValue = {};
   let cborLabel = null;
 
@@ -52,8 +52,8 @@ function toCloudProtocolV2(cborValue: CBORValue): CBORValue {
   return cloudV2CBORValue;
 }
 
-function parse(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): CBORValue {
-  const parsed: CBORValue = {};
+function format(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): SenML {
+  const parsed: SenML = {};
   if (timestamp !== -1) parsed.bt = timestamp || new Date().getTime()
   parsed.n = name;
 
@@ -68,24 +68,23 @@ function parse(value: CloudMessageValue, name: string, timestamp: number, device
   return parsed;
 }
 
-function getSenML(name: string, value: CloudMessageValue, timestamp: number, useCloudProtocolV2: boolean, deviceId: string): CBORValue | CBORValue[] {
+function parse(name: string, value: CloudMessageValue, timestamp: number, useCloudProtocolV2: boolean, deviceId: string): SenML | SenML[] {
   if (timestamp && !Number.isInteger(timestamp)) throw new Error('Timestamp must be Integer');
   if (name === undefined || typeof name !== 'string') throw new Error('Name must be a valid string');
 
   if (Utils.isObject(value)) return Object.keys(value)
-    .map((key, i) => parse(value[key], `${name}:${key}`, i === 0 ? timestamp : -1, i === 0 ? deviceId : undefined))
+    .map((key, i) => format(value[key], `${name}:${key}`, i === 0 ? timestamp : -1, i === 0 ? deviceId : undefined))
     .map((cborValue) => useCloudProtocolV2 ? toCloudProtocolV2(cborValue) : cborValue);
 
-  let cborValue = parse(value, name, timestamp, deviceId);
+  let cborValue = format(value, name, timestamp, deviceId);
   if (useCloudProtocolV2) cborValue = toCloudProtocolV2(cborValue);
   return cborValue;
 };
 
 export default {
-  encode,
-  decode,
+  CBOR,
+  parse,
   toString,
-  getSenML,
   valueFrom,
   nameFrom,
   isPropertyValue,

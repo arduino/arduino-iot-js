@@ -25,10 +25,10 @@
 
 
 declare module '@arduino/cbor-js' {
-  export function encode(value: CBORValue[], numericKeys?: boolean): ArrayBuffer;
-  export function decode(data: ArrayBuffer, tagger?: (value: CBORValue) => CBORValue, simpleValue?: CBORValue): CBORValue[];
+  export function encode(value: SenML[], numericKeys?: boolean): ArrayBuffer;
+  export function decode(data: ArrayBuffer, tagger?: (value: SenML) => SenML, simpleValue?: SenML): SenML[];
 
-  export type CBORValue = {
+  export type SenML = {
     bn?: string;
     bt?: number;
     bu?: string;

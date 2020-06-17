@@ -17,8 +17,8 @@
 * a commercial license, send an email to license@arduino.cc.
 *
 */
-const ArduinoCloud = require('../dist/index.js').default;
-const { CBOR } = require('../dist/index.js');
+const ArduinoCloud = require('../dist/index.js');
+const { SenML } = require('../dist/index.js');
 
 const deviceId = '1f4ced70-53ad-4b29-b221-1b0abbdfc757';
 const thingId = '2cea8542-d472-4464-859c-4ef4dfc7d1d3';
@@ -106,6 +106,6 @@ const sendPropertyAsDevice = (deviceId, thingId, name, value, timestamp = new Da
   if (timestamp && !Number.isInteger(timestamp)) throw new Error('Timestamp must be Integer');
   if (name === undefined || typeof name !== 'string') throw new Error('Name must be a valid string');
 
-  const senMlValue = CBOR.getSenML(name, value, timestamp, false, deviceId);
-  return ArduinoCloud.sendMessage(`/a/t/${thingId}/e/o`, CBOR.encode([senMlValue]));
+  const senMlValue = SenML.parse(name, value, timestamp, false, deviceId);
+  return ArduinoCloud.sendMessage(`/a/t/${thingId}/e/o`, SenML.CBOR.encode([senMlValue]));
 };

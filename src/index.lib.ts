@@ -18,7 +18,7 @@
 *
 */
 
-import CBOR from './cbor';
+import SenML from './senML';
 import fetch from "node-fetch";
 import { HttpClientFactory } from './http/HttpClientFactory';
 import { ArduinoCloudClient } from "./client/ArduinoCloudClient";
@@ -28,5 +28,6 @@ import { TokenConnectionBuilder } from "./builder/TokenConnectionBuilder";
 const builders = [new TokenConnectionBuilder(), new APIConnectionBuilder(HttpClientFactory.Create(fetch))];
 const DefaultClient = new ArduinoCloudClient(builders);
 
-export { CBOR };
 export default DefaultClient;
+export { SenML, ArduinoCloudClient };
+export { IArduinoCloudClient, CloudOptions, CloudMessageValue } from "./client/IArduinoCloudClient";
