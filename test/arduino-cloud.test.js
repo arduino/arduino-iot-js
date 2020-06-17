@@ -17,7 +17,7 @@
 * a commercial license, send an email to license@arduino.cc.
 *
 */
-const ArduinoCloud = require('../dist/index.js');
+const ArduinoCloud = require('../dist/index.js').default;
 const { SenML } = require('../dist/index.js');
 
 const deviceId = '1f4ced70-53ad-4b29-b221-1b0abbdfc757';
