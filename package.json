@@ -1,6 +1,6 @@
 {
   "name": "arduino-iot-js",
-  "version": "0.6.0-beta.0",
+  "version": "0.6.0-beta.1",
   "license": "GPLv3",
   "description": "JS module providing Arduino Create IoT Cloud Connection",
   "main": "./lib/index.js",
@@ -49,7 +49,9 @@
     "lint": "./node_modules/.bin/eslint src",
     "lint-fix": "./node_modules/.bin/eslint --fix src --ext .js",
     "clean": "rimraf lib es dist",
-    "build": "npm run clean && rollup -c && rollup -c ./rollup.config.lib.js"
+    "build:es": "rollup -c",
+    "build:lib": "TS_NODE_PROJECT='./tsconfig.commonjs.json' && rollup -c ./rollup.config.lib.js",
+    "build": "npm run clean && npm run build:es && npm run build:lib"
   },
   "repository": {
     "type": "git",
