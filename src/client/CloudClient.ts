@@ -18,7 +18,7 @@ export class CloudClient implements ICloudClient {
     host: 'wss.iot.arduino.cc',
     port: 8443,
     token: undefined,
-    useCloudProtocolV2: false,
+    useCloudProtocolV2: true,
     onOffline: NOOP,
     onConnected: NOOP,
     onDisconnect: NOOP,
