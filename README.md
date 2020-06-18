@@ -57,6 +57,7 @@ const options = {
 ArduinoIoTCloud.connect(options)
   .then(() => console.log("Connected to Arduino IoT Cloud broker"))
   .catch(error => console.error(error));
+```
 
 ### How to listen for property value updates
 After a successful connection, you can listen for property updates.
@@ -77,16 +78,13 @@ const options = {
     }
 }
 
-ArduinoIoTCloud.connect(options).then(() => {
+ArduinoIoTCloud.connect(options)
+  .then(() => {
     console.log("Connected to Arduino IoT Cloud broker");
-    ArduinoIoTCloud.onPropertyValue(thingId, variableName, showUpdates = value => {
-        console.log(value);
-    }).then(() => {
-        console.log("Callback registered");
-    }, error => {
-        console.log(error);
-    });
-});
+    return ArduinoIoTCloud.onPropertyValue(thingId, variableName, showUpdates = value => console.log(value));
+  })
+  .then(() => console.log("Callback registered"))
+  .catch(error => console.log(error));
 ```
 Each time a new value is sent from the Device, the `counterUpdates` callback will be called.
 
@@ -153,7 +151,7 @@ ArduinoIoTCloud.connect(options)
             .then(properties => {
               properties.forEach(property => {
                 ArduinoIoTCloud.onPropertyValue(thing.id, property.variable_name,
-                  value => console.log(property.variable_name + ": " + value))
+                  showUpdates = value => console.log(property.variable_name + ": " + value))
                   .then(() => console.log("Callback registered for " + property.variable_name))
                   .catch(error => console.log(error));
               });
