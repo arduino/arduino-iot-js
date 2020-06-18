@@ -1,5 +1,5 @@
-import { IConnection } from "../connection/IConnection";
-import { CloudOptions } from "../client/ICloudClient";
+import { IConnection } from '../connection/IConnection';
+import { CloudOptions } from '../client/ICloudClient';
 
 export interface IConnectionBuilder {
   canBuild(options: CloudOptions): boolean;

@@ -5,7 +5,6 @@ module.exports = {
   ignorePatterns: ['node_modules/*', 'lib/*', 'es/*'],
   parser: '@typescript-eslint/parser',
   extends: [
-    'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'prettier/@typescript-eslint',
     'plugin:prettier/recommended',
@@ -23,14 +22,7 @@ module.exports = {
     '@typescript-eslint/no-empty-interface': 'warn',
     '@typescript-eslint/no-empty-function': 'warn',
     '@typescript-eslint/no-namespace': 'warn',
-    'react/display-name': 'warn',
-    'react/prop-types': 'warn',
     'prefer-rest-params': 'warn',
     'no-else-return': 'error',
-  },
-  settings: {
-    react: {
-      version: 'detect',
-    },
   },
 };

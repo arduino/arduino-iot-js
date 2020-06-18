@@ -1,4 +1,4 @@
-import { CloudMessageValue } from "../client/ICloudClient";
+import { CloudMessageValue } from '../client/ICloudClient';
 
 class ArduinoCloudError extends Error {
   constructor(public code: number, message: string) {
@@ -12,19 +12,19 @@ class ArduinoCloudError extends Error {
 }
 
 function isObject(value: CloudMessageValue): value is object {
-  return typeof (value) === "object";
+  return typeof value === 'object';
 }
 
 function isNumber(value: CloudMessageValue): value is number {
-  return typeof (value) === "number";
+  return typeof value === 'number';
 }
 
 function isString(value: CloudMessageValue): value is string {
-  return typeof (value) === "string";
+  return typeof value === 'string';
 }
 
 function isBoolean(value: CloudMessageValue): value is boolean {
-  return typeof (value) === "boolean";
+  return typeof value === 'boolean';
 }
 
 function isArray<T>(value: CloudMessageValue): value is T[] {
@@ -41,9 +41,9 @@ function toArrayBuffer(buf: { length: number }): ArrayBuffer {
 }
 
 function toBuffer(ab: ArrayBuffer): Buffer {
-  var buffer = new Buffer(ab.byteLength);
-  var view = new Uint8Array(ab);
-  for (var i = 0; i < buffer.length; ++i) {
+  const buffer = new Buffer(ab.byteLength);
+  const view = new Uint8Array(ab);
+  for (let i = 0; i < buffer.length; ++i) {
     buffer[i] = view[i];
   }
   return buffer;
@@ -57,7 +57,7 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
-};
+}
 
 export default {
   ArduinoCloudError,
@@ -68,5 +68,5 @@ export default {
   isArray,
   toArrayBuffer,
   toBuffer,
-  arrayBufferToBase64
+  arrayBufferToBase64,
 };

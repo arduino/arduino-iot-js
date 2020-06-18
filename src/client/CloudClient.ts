@@ -1,11 +1,11 @@
-import { filter } from "rxjs/operators";
-import { Subscription, Subject, Observable } from "rxjs";
+import { filter } from 'rxjs/operators';
+import { Subscription, Subject, Observable } from 'rxjs';
 
-import SenML from "../senML";
-import Utils from "../utils";
+import SenML from '../senML';
+import Utils from '../utils';
 import { IConnectionBuilder } from '../builder/IConnectionBuilder';
-import { IConnection, CloudMessage } from "../connection/IConnection";
-import { ICloudClient, CloudOptions, OnMessageCallback, CloudMessageValue } from "./ICloudClient";
+import { IConnection, CloudMessage } from '../connection/IConnection';
+import { ICloudClient, CloudOptions, OnMessageCallback, CloudMessageValue } from './ICloudClient';
 
 const NOOP = () => null;
 export class CloudClient implements ICloudClient {
@@ -30,15 +30,15 @@ export class CloudClient implements ICloudClient {
     return client;
   }
 
-  constructor(private builders: IConnectionBuilder[] = []) { }
+  constructor(private builders: IConnectionBuilder[] = []) {}
 
   public async connect(options: CloudOptions): Promise<IConnection> {
     this.options = { ...this.options, ...options };
-    const builder = this.builders.find(b => b.canBuild(this.options));
+    const builder = this.builders.find((b) => b.canBuild(this.options));
 
     if (!builder) throw new Error('connection failed: options not valid');
 
-    const connection = await builder.build(this.options)
+    const connection = await builder.build(this.options);
     return this.init(connection);
   }
 
@@ -69,7 +69,7 @@ export class CloudClient implements ICloudClient {
 
       this.connection = null;
       Object.values(this.subscriptions).forEach((subs, topic) => {
-        subs.forEach(sub => sub.unsubscribe())
+        subs.forEach((sub) => sub.unsubscribe());
         delete this.callbacks[topic];
         delete this.subscriptions[topic];
       });
@@ -92,14 +92,14 @@ export class CloudClient implements ICloudClient {
 
         await this.connect({ ...this.options, token: newToken });
 
-        Object.keys(this.subscriptions).forEach(topic => {
-          this.subscriptions[topic].forEach(sub => sub.unsubscribe());
+        Object.keys(this.subscriptions).forEach((topic) => {
+          this.subscriptions[topic].forEach((sub) => sub.unsubscribe());
           delete this.subscriptions[topic];
 
           const callbacks = [...this.callbacks[topic]];
           delete this.callbacks[topic];
-          callbacks.forEach(cb => this.subscribe(topic, cb));
-        })
+          callbacks.forEach((cb) => this.subscribe(topic, cb));
+        });
 
         const { onConnected = NOOP } = this.options;
         onConnected();
@@ -122,7 +122,10 @@ export class CloudClient implements ICloudClient {
       if (!this.connection) return reject(new Error('send message failed: no connection found'));
 
       const body = Utils.isString(message) ? Buffer.from(message, 'utf8') : message;
-      this.connection.publish(topic, Utils.toBuffer(body), { qos: 1, retain: false });
+      this.connection.publish(topic, Utils.toBuffer(body), {
+        qos: 1,
+        retain: false,
+      });
       return resolve();
     });
   }
@@ -139,13 +142,25 @@ export class CloudClient implements ICloudClient {
     return this.unsubscribe(`/a/d/${deviceId}/s/o`);
   }
 
-  public async sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp: number = new Date().getTime()): Promise<void> {
+  public async sendProperty<T extends CloudMessageValue>(
+    thingId: string,
+    name: string,
+    value: T,
+    timestamp: number = new Date().getTime()
+  ): Promise<void> {
     const topic = `/a/t/${thingId}/e/i`;
     const values = SenML.parse(name, value, timestamp, this.options.useCloudProtocolV2, null);
-    return this.sendMessage(topic, SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2));
+    return this.sendMessage(
+      topic,
+      SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2)
+    );
   }
 
-  public async onPropertyValue<T extends CloudMessageValue>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void> {
+  public async onPropertyValue<T extends CloudMessageValue>(
+    thingId: string,
+    name: string,
+    cb: OnMessageCallback<T>
+  ): Promise<void> {
     if (!name) throw new Error('Invalid property name');
     if (typeof cb !== 'function') throw new Error('Invalid callback');
 
@@ -157,8 +172,9 @@ export class CloudClient implements ICloudClient {
     this.callbacks[topic].push(cb);
     this.subscriptions[topic].push(
       this.messagesFrom(topic)
-        .pipe(filter(v => v.propertyName === name))
-        .subscribe(v => cb(v.value as T)));
+        .pipe(filter((v) => v.propertyName === name))
+        .subscribe((v) => cb(v.value as T))
+    );
   }
 
   private subscribe<T extends CloudMessageValue>(topic: string, cb: OnMessageCallback<T>): Promise<void> {
@@ -168,9 +184,7 @@ export class CloudClient implements ICloudClient {
         this.callbacks[topic].push(cb);
 
         this.subscriptions[topic] = this.subscriptions[topic] = [];
-        this.subscriptions[topic].push(
-          this.messagesFrom(topic)
-            .subscribe(v => cb(v.value as T)));
+        this.subscriptions[topic].push(this.messagesFrom(topic).subscribe((v) => cb(v.value as T)));
 
         return resolve();
       } catch (err) {
@@ -183,7 +197,7 @@ export class CloudClient implements ICloudClient {
     return new Promise((resolve, reject) => {
       if (!this.connection) return reject(new Error('unsubscribe failed: no connection found'));
 
-      return this.connection.unsubscribe(topic, null, (err) => err ? reject() : resolve());
+      return this.connection.unsubscribe(topic, null, (err) => (err ? reject() : resolve()));
     });
   }
 
@@ -195,16 +209,14 @@ export class CloudClient implements ICloudClient {
     this.connection.subscribe(topic, (err) => {
       if (err) throw new Error(`subscription failed: ${err.toString()}`);
 
-      subscription = this.connection.messages
-        .pipe(filter(v => v.topic === topic))
-        .subscribe(v => subject.next(v));
+      subscription = this.connection.messages.pipe(filter((v) => v.topic === topic)).subscribe((v) => subject.next(v));
     });
 
     const originalMethod = subject.unsubscribe;
     subject.unsubscribe = () => {
       subscription.unsubscribe();
       originalMethod();
-    }
+    };
     return subject;
   }
 }

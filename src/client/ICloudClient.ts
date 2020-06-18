@@ -1,4 +1,4 @@
-import { IConnection } from "../connection/IConnection";
+import { IConnection } from '../connection/IConnection';
 
 export type BaseCloudOptions = {
   host?: string;
@@ -8,7 +8,7 @@ export type BaseCloudOptions = {
   onConnected?: () => void;
   onDisconnect?: (message?: any) => void;
   useCloudProtocolV2?: boolean;
-}
+};
 
 export type BrowserOptions = {
   token: string;

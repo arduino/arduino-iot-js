@@ -23,7 +23,6 @@
     +---------------+-------+------------+------------+------------+
 */
 
-
 declare module '@arduino/cbor-js' {
   export function encode(value: SenML[], numericKeys?: boolean): ArrayBuffer;
   export function decode(data: ArrayBuffer, tagger?: (value: SenML) => SenML, simpleValue?: SenML): SenML[];
@@ -45,5 +44,5 @@ declare module '@arduino/cbor-js' {
     t?: number;
     ut?: number;
     [key: string]: any;
-  }
+  };
 }

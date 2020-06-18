@@ -1,7 +1,7 @@
-import { Connection } from "../connection/Connection";
-import { IConnection } from "../connection/IConnection";
+import { Connection } from '../connection/Connection';
+import { IConnection } from '../connection/IConnection';
 import { IConnectionBuilder } from './IConnectionBuilder';
-import { BrowserOptions, CloudOptions, BaseCloudOptions } from "../client/ICloudClient";
+import { BrowserOptions, CloudOptions, BaseCloudOptions } from '../client/ICloudClient';
 
 export class TokenConnectionBuilder implements IConnectionBuilder {
   canBuild(options: CloudOptions): boolean {
