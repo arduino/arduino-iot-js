@@ -111,30 +111,10 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     }
   }
 
-  public subscribe<T extends CloudMessageValue>(topic: string, cb: OnMessageCallback<T>): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.callbacks[topic] = this.callbacks[topic] = [];
-        this.callbacks[topic].push(cb);
+  public getToken(): string {
+    if (!this.connection) throw new Error('send message failed: no connection found');
 
-        this.subscriptions[topic] = this.subscriptions[topic] = [];
-        this.subscriptions[topic].push(
-          this.messagesFrom(topic)
-            .subscribe(v => cb(v.value as T)));
-
-        return resolve();
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-
-  public unsubscribe(topic: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.connection) return reject(new Error('unsubscribe failed: no connection found'));
-
-      return this.connection.unsubscribe(topic, null, (err) => err ? reject() : resolve());
-    });
+    return this.connection.token;
   }
 
   public sendMessage(topic: string, message: string | ArrayBuffer): Promise<void> {
@@ -162,7 +142,7 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
   public async sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp: number = new Date().getTime()): Promise<void> {
     const topic = `/a/t/${thingId}/e/i`;
     const values = SenML.parse(name, value, timestamp, this.options.useCloudProtocolV2, null);
-    return this.sendMessage(topic, SenML.CBOR.encode(Utils.isArray(values) ? values : [values], true));
+    return this.sendMessage(topic, SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2));
   }
 
   public async onPropertyValue<T extends CloudMessageValue>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void> {
@@ -179,6 +159,32 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
       this.messagesFrom(topic)
         .pipe(filter(v => v.propertyName === name))
         .subscribe(v => cb(v.value as T)));
+  }
+
+  private subscribe<T extends CloudMessageValue>(topic: string, cb: OnMessageCallback<T>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.callbacks[topic] = this.callbacks[topic] = [];
+        this.callbacks[topic].push(cb);
+
+        this.subscriptions[topic] = this.subscriptions[topic] = [];
+        this.subscriptions[topic].push(
+          this.messagesFrom(topic)
+            .subscribe(v => cb(v.value as T)));
+
+        return resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  private unsubscribe(topic: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.connection) return reject(new Error('unsubscribe failed: no connection found'));
+
+      return this.connection.unsubscribe(topic, null, (err) => err ? reject() : resolve());
+    });
   }
 
   private messagesFrom(topic: string): Observable<CloudMessage> {

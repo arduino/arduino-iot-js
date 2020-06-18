@@ -17,8 +17,8 @@ function nameFrom(property: SenML | string[]): string {
   return isPropertyValue(property) ? property.n : property[0]
 }
 
-function toString(value: SenML[]): string {
-  const encoded = CBOR.encode(value);
+function toString(value: SenML[], numericKeys?: boolean): string {
+  const encoded = CBOR.encode(value, numericKeys);
   return Utils.arrayBufferToBase64(encoded);
 };
 

@@ -34,10 +34,10 @@ export interface IArduinoCloudClient {
   connect(options: CloudOptions): Promise<IConnection>;
   reconnect(): Promise<void>;
   disconnect(): Promise<void>;
-  updateToken(newToken: string): Promise<void>;
 
-  subscribe<T extends CloudMessageValue>(topic: string, cb: OnMessageCallback<T>): Promise<void>;
-  unsubscribe(topic: string): Promise<void>;
+  updateToken(newToken: string): Promise<void>;
+  getToken(): string;
+
   sendMessage(topic: string, message: string): Promise<void>;
   sendMessage(topic: string, message: ArrayBuffer): Promise<void>;
 

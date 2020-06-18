@@ -16,9 +16,10 @@ const BaseConnectionOptions: Partial<ConnectionOptions> = {
 }
 
 export class Connection implements IConnection {
-  public messages?: Observable<CloudMessage>;
+  public token: string;
+  public messages: Observable<CloudMessage>;
+  
   private _client: mqtt.MqttClient;
-
   private get client(): mqtt.MqttClient {
     return this._client;
   }
@@ -46,6 +47,7 @@ export class Connection implements IConnection {
 
     const connection = new Connection();
     connection.client = mqtt.connect(`wss://${host}:${port}/mqtt`, { ...BaseConnectionOptions, ...options });
+    connection.token = token;
     return connection
   }
 

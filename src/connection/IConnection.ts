@@ -1,6 +1,9 @@
 
 import { Observable } from "rxjs";
-import { MqttClient, IClientOptions, OnConnectCallback, OnMessageCallback, OnPacketCallback, OnErrorCallback, CloseCallback, IClientReconnectOptions, PacketCallback, IClientPublishOptions, IClientSubscribeOptions, ClientSubscribeCallback } from 'mqtt';
+import {
+  IClientOptions, OnConnectCallback, OnMessageCallback, OnPacketCallback,
+  OnErrorCallback, CloseCallback, IClientReconnectOptions, PacketCallback, IClientPublishOptions
+} from 'mqtt';
 
 import { CloudMessageValue } from "../client/IArduinoCloudClient";
 
@@ -8,6 +11,9 @@ export type ConnectionOptions = IClientOptions;
 export type CloudMessage = { topic: string; propertyName?: string; value: CloudMessageValue };
 
 export interface IConnection {
+  token?: string;
+  messages?: Observable<CloudMessage>;
+
   on(event: "connect", cb: OnConnectCallback): IConnection;
   on(event: "message", cb: OnMessageCallback): IConnection;
   on(event: "packetsend" | "packetreceive", cb: OnPacketCallback): IConnection;
@@ -26,7 +32,5 @@ export interface IConnection {
   publish(topic: any, message: any, opts?: any, callback?: any): IConnection;
 
   subscribe(topic: any, callback?: any): IConnection;
-
-  messages?: Observable<CloudMessage>
 }
 
