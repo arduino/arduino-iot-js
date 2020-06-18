@@ -1,0 +1,15 @@
+{
+  "name": "listenproperties-example",
+  "version": "0.0.1",
+  "description": "Full example on how to listen for live updates of all the user properties",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@arduino/arduino-iot-client": "^1.3.2",
+    "arduino-iot-js": "^0.6.0-beta.3"
+  }
+}
