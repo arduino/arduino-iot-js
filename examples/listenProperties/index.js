@@ -10,7 +10,8 @@ options = {
 }
 
 // Connect to Arduino IoT Cloud MQTT Broker
-ArduinoIoTCloud.connect(options).then(() => {
+ArduinoIoTCloud.connect(options)
+  .then(() => {
     console.log("Connected to Arduino IoT Cloud MQTT broker");
 
     // Init Arduino API Client
@@ -19,19 +20,22 @@ ArduinoIoTCloud.connect(options).then(() => {
     
     const thingsAPI = new ArduinoIoTAPI.ThingsV2Api(ArduinoIoTClient);
     const propertiesAPI = new ArduinoIoTAPI.PropertiesV2Api(ArduinoIoTClient);
-    thingsAPI.thingsV2List().then(things => {
+
+    thingsAPI.thingsV2List()
+      .then(things => {
         things.forEach(thing => {
-            propertiesAPI.propertiesV2List(thing.id).then(properties => {
-                properties.forEach(property => {
-                    ArduinoIoTCloud.onPropertyValue(thing.id, property.variable_name, update = value => {
-                        console.log(property.variable_name+": "+value)
-                    }).then(() => {
-                        console.log("Callback registered for "+property.variable_name);
-                    });
-                });
+          propertiesAPI.propertiesV2List(thing.id)
+            .then(properties => {
+              properties.forEach(property => {
+                ArduinoIoTCloud.onPropertyValue(thing.id, property.variable_name,
+                  showUpdates = update = value => console.log(property.variable_name+": "+value))
+                    .then(() => console.log("Callback registered for "+property.variable_name))
+                    .catch(error => console.error(error));                    
+              });
             })
+            .catch(error => console.error(error));
         });
-    }, error => {
-        console.log(error)
-    });
-}); 
+    })
+    .catch(error => console.error(error));
+  })
+  .catch(error => console.error(error));
