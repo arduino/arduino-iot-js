@@ -8,17 +8,11 @@ import external from 'rollup-plugin-peer-deps-external';
 
 export default {
   input: "./src/index.lib.ts",
-  output: [
-    {
-      file: pkg.main,
-      format: 'cjs',
-      sourcemap: true
-    },
-    {
-      file: "./dist/index.js",
-      format: 'cjs'
-    }
-  ],
+  output: [{
+    file: pkg.main,
+    format: 'cjs',
+    sourcemap: true
+  }],
   plugins: [
     external({
       includeDependencies: true,

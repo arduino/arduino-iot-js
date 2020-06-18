@@ -2,7 +2,7 @@ import { IHttpClient } from '../http/IHttpClient';
 import { Connection } from "../connection/Connection";
 import { IConnection } from "../connection/IConnection";
 import { IConnectionBuilder } from './IConnectionBuilder';
-import { APIOptions, CloudOptions, BaseCloudOptions } from "../client/IArduinoCloudClient";
+import { APIOptions, CloudOptions, BaseCloudOptions } from "../client/ICloudClient";
 
 type AccessResponse = {
   "access_token": string;

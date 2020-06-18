@@ -5,10 +5,10 @@ import SenML from "../senML";
 import Utils from "../utils";
 import { IConnectionBuilder } from '../builder/IConnectionBuilder';
 import { IConnection, CloudMessage } from "../connection/IConnection";
-import { IArduinoCloudClient, CloudOptions, OnMessageCallback, CloudMessageValue } from "./IArduinoCloudClient";
+import { ICloudClient, CloudOptions, OnMessageCallback, CloudMessageValue } from "./ICloudClient";
 
 const NOOP = () => null;
-export class ArduinoCloudClient implements IArduinoCloudClient {
+export class CloudClient implements ICloudClient {
   private connection: IConnection;
   private subscriptions: { [key: string]: Subscription[] } = {};
   private callbacks: { [key: string]: OnMessageCallback<any>[] } = {};
@@ -24,8 +24,8 @@ export class ArduinoCloudClient implements IArduinoCloudClient {
     onDisconnect: NOOP,
   };
 
-  public static From(connection: IConnection): ArduinoCloudClient {
-    const client = new ArduinoCloudClient();
+  public static From(connection: IConnection): CloudClient {
+    const client = new CloudClient();
     client.init(connection);
     return client;
   }

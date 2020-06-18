@@ -17,7 +17,7 @@
 * a commercial license, send an email to license@arduino.cc.
 *
 */
-const { SenML } = require('../dist/index.js');
+const { SenML } = require('../lib/index.js');
 
 const deviceId = '1f4ced70-53ad-4b29-b221-1b0abbdfc757';
 const timestamp = 1536743296;

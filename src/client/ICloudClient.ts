@@ -30,13 +30,13 @@ export function isBrowserOptions(options: CloudOptions): options is BrowserOptio
 export type CloudMessageValue = string | number | boolean | object;
 export type OnMessageCallback<T extends CloudMessageValue> = (message: T) => void;
 
-export interface IArduinoCloudClient {
+export interface ICloudClient {
   connect(options: CloudOptions): Promise<IConnection>;
   reconnect(): Promise<void>;
   disconnect(): Promise<void>;
 
-  updateToken(newToken: string): Promise<void>;
   getToken(): string;
+  updateToken(newToken: string): Promise<void>;
 
   sendMessage(topic: string, message: string): Promise<void>;
   sendMessage(topic: string, message: ArrayBuffer): Promise<void>;

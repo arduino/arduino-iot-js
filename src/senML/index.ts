@@ -1,7 +1,7 @@
 import CBOR, { SenML } from '@arduino/cbor-js';
 
 import Utils from "../utils";
-import { CloudMessageValue } from "../client/IArduinoCloudClient";
+import { CloudMessageValue } from "../client/ICloudClient";
 
 function isPropertyValue(message: SenML | string[]): message is SenML {
   return !!(message as SenML).n;

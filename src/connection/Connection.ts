@@ -4,7 +4,7 @@ import { Observable, Subject } from "rxjs";
 
 import SenML from '../senML';
 import Utils from "../utils";
-import { CloudMessageValue } from "../client/IArduinoCloudClient";
+import { CloudMessageValue } from "../client/ICloudClient";
 import { IConnection, CloudMessage, ConnectionOptions } from "./IConnection";
 
 const BaseConnectionOptions: Partial<ConnectionOptions> = {

@@ -1,7 +1,7 @@
 import { Connection } from "../connection/Connection";
 import { IConnection } from "../connection/IConnection";
 import { IConnectionBuilder } from './IConnectionBuilder';
-import { BrowserOptions, CloudOptions, BaseCloudOptions } from "../client/IArduinoCloudClient";
+import { BrowserOptions, CloudOptions, BaseCloudOptions } from "../client/ICloudClient";
 
 export class TokenConnectionBuilder implements IConnectionBuilder {
   canBuild(options: CloudOptions): boolean {

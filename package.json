@@ -35,6 +35,7 @@
     "@types/react-dom": "^16.9.4",
     "@types/sinon": "^7.5.1",
     "@types/whatwg-fetch": "0.0.33",
+    "eslint": "^7.2.0",
     "jest": "^26.0.1",
     "rimraf": "^3.0.2",
     "rollup": "^2.3.3",
@@ -46,11 +47,11 @@
   },
   "scripts": {
     "test": "npm run build && jest --config ./jest.config.js",
-    "lint": "./node_modules/.bin/eslint src",
-    "lint-fix": "./node_modules/.bin/eslint --fix src --ext .js",
-    "clean": "rimraf lib es dist",
+    "lint": "eslint src",
+    "lint-fix": "eslint --fix src --ext .js",
+    "clean": "rimraf lib es",
     "build:es": "rollup -c",
-    "build:lib": "TS_NODE_PROJECT='./tsconfig.commonjs.json' && rollup -c ./rollup.config.lib.js",
+    "build:lib": "rollup -c ./rollup.config.lib.js",
     "build": "npm run clean && npm run build:es && npm run build:lib"
   },
   "repository": {

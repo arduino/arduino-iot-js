@@ -2,7 +2,7 @@ module.exports = {
   env: {
     es6: true,
   },
-  ignorePatterns: ['node_modules/*', 'dist/*'],
+  ignorePatterns: ['node_modules/*', 'lib/*', 'es/*'],
   parser: '@typescript-eslint/parser',
   extends: [
     'plugin:react/recommended',

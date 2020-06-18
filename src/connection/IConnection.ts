@@ -5,7 +5,7 @@ import {
   OnErrorCallback, CloseCallback, IClientReconnectOptions, PacketCallback, IClientPublishOptions
 } from 'mqtt';
 
-import { CloudMessageValue } from "../client/IArduinoCloudClient";
+import { CloudMessageValue } from "../client/ICloudClient";
 
 export type ConnectionOptions = IClientOptions;
 export type CloudMessage = { topic: string; propertyName?: string; value: CloudMessageValue };

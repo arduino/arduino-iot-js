@@ -1,4 +1,4 @@
-import { CloudMessageValue } from "../client/IArduinoCloudClient";
+import { CloudMessageValue } from "../client/ICloudClient";
 
 class ArduinoCloudError extends Error {
   constructor(public code: number, message: string) {

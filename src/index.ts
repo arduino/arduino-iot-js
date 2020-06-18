@@ -21,13 +21,13 @@
 import "whatwg-fetch";
 import SenML from './senML';
 import { HttpClientFactory } from './http/HttpClientFactory';
-import { ArduinoCloudClient } from "./client/ArduinoCloudClient";
+import { CloudClient } from "./client/CloudClient";
 import { APIConnectionBuilder } from "./builder/APIConnectionBuilder";
 import { TokenConnectionBuilder } from "./builder/TokenConnectionBuilder";
 
 const builders = [new TokenConnectionBuilder(), new APIConnectionBuilder(HttpClientFactory.Create(fetch))];
-const DefaultClient = new ArduinoCloudClient(builders);
+const ArduinoIoTCloud = new CloudClient(builders);
 
-export default DefaultClient;
-export { SenML, ArduinoCloudClient };
-export { IArduinoCloudClient, CloudOptions, CloudMessageValue } from "./client/IArduinoCloudClient";
+export { SenML };
+export { ArduinoIoTCloud };
+export { CloudOptions, CloudMessageValue } from "./client/ICloudClient";
