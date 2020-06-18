@@ -66,7 +66,7 @@ To do this you need:
 
 ```javascript
 const { ArduinoIoTCloud } = require('arduino-iot-js');
-const thingID = "THING_ID"
+const thingId = "THING_ID"
 const variableName = "PROPERTY_NAME"
 
 const options = {
