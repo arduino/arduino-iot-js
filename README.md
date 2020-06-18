@@ -153,12 +153,12 @@ ArduinoIoTCloud.connect(options)
                 ArduinoIoTCloud.onPropertyValue(thing.id, property.variable_name,
                   showUpdates = value => console.log(property.variable_name + ": " + value))
                   .then(() => console.log("Callback registered for " + property.variable_name))
-                  .catch(error => console.log(error));
+                  .catch(error => console.error(error));
               });
             })
-            .catch(error => console.log(error));
+            .catch(error => console.error(error));
         });
       });
   })
-  .catch(error => console.log(error));
+  .catch(error => console.error(error));
 ```
