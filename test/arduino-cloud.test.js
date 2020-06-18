@@ -19,8 +19,8 @@
 */
 const { ArduinoIoTCloud, SenML } = require('../lib/index.js');
 
-const deviceId = '1f4ced70-53ad-4b29-b221-1b0abbdfc757';
-const thingId = '2cea8542-d472-4464-859c-4ef4dfc7d1d3';
+const deviceId = '1e5b4cdd-57da-4c68-9dfd-439e493f7c79';
+const thingId = '82b903fe-4387-47ed-a503-201619b949fe';
 const propertyIntName = 'integer';
 const propertyIntValue = 22;
 
@@ -37,7 +37,8 @@ describe('Test the library basic functionalities', () => {
   it('ArduinoCloud connection', (done) => {
     /* global token */
     ArduinoIoTCloud.connect({
-      token,
+      clientId,    
+      clientSecret,
       onDisconnect: (message) => {
         if (message.errorCode !== 0) {
           throw Error(message);
@@ -53,7 +54,10 @@ describe('Test the library basic functionalities', () => {
 
   describe("when connected", () => {
     beforeEach((done) => {
-      ArduinoIoTCloud.connect({ token }).then(() => done());
+      ArduinoIoTCloud.connect({ 
+        clientId,    
+        clientSecret,
+      }).then(() => done());
     })
 
     it('Property name must be a string in sendProperty', (done) => {

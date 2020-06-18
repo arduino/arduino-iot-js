@@ -1,6 +1,7 @@
 module.exports = {
   globals: {
-    token: process.env.TOKEN,
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
   },
   verbose: true,
   setupFiles: [
