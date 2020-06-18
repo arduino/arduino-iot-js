@@ -54,12 +54,9 @@ const options = {
     }
 }
 
-ArduinoIoTCloud.connect(options).then(() => {
-    console.log("Connected to Arduino IoT Cloud broker");
-}, error => {
-    console.error(error);
-});
-```
+ArduinoIoTCloud.connect(options)
+  .then(() => console.log("Connected to Arduino IoT Cloud broker"))
+  .catch(error => console.error(error));
 
 ### How to listen for property value updates
 After a successful connection, you can listen for property updates.
