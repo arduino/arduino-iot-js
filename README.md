@@ -35,7 +35,7 @@ The MQTT connection over Websocket relies on Username / Password authentication.
 ### How to import arduino-iot-js in your project
 Using a web application in the browser
 ```javascript
-import ArduinoIoTCloud from 'arduino-iot-js'
+import { ArduinoIoTCloud } from 'arduino-iot-js'
 ```
 Using nodejs
 ```javascript
