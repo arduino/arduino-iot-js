@@ -92,9 +92,8 @@ Each time a new value is sent from the Device, the `counterUpdates` callback wil
 
 ### How to disconnect from Arduino IoT Cloud Broker
 ```javascript
-ArduinoCloud.disconnect().then(() => {
-  console.log("Successfully disconnected");
-});
+ArduinoCloud.disconnect()
+  .then(() => console.log("Successfully disconnected"));
 ```
 ### How to send property values to the device
 To do this you need:
