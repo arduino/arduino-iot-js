@@ -8,7 +8,7 @@ function isPropertyValue(message: SenML | string[]): message is SenML {
 }
 
 function isNil<T>(v: T): boolean {
-  return v !== null && v !== undefined;
+  return v === null || v === undefined;
 }
 
 function takeFrom(...values: CloudMessageValue[]): CloudMessageValue {
