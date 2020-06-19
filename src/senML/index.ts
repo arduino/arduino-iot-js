@@ -7,8 +7,18 @@ function isPropertyValue(message: SenML | string[]): message is SenML {
   return !!(message as SenML).n;
 }
 
+function isNil<T>(v: T): boolean {
+  return v !== null && v !== undefined;
+}
+
+function takeFrom(...values: CloudMessageValue[]): CloudMessageValue {
+  return values.find((v) => !isNil(v));
+}
+
 function valueFrom(message: SenML | string[]): CloudMessageValue {
-  return isPropertyValue(message) ? message.v || message.vs || message.vb : message[2] || message[3] || message[4];
+  return isPropertyValue(message)
+    ? takeFrom(message.v, message.vs, message.vb)
+    : takeFrom(message[2], message[3], message[4]);
 }
 
 function nameFrom(property: SenML | string[]): string {
