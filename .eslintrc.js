@@ -1,10 +1,28 @@
 module.exports = {
-    "extends": "airbnb-base",
-    "env": {
-      "browser": true,
-      "jest": true
-    },
-    "rules": {
-      "no-await-in-loop": 0
-    }
+  env: {
+    es6: true,
+  },
+  ignorePatterns: ['node_modules/*', 'lib/*', 'es/*'],
+  parser: '@typescript-eslint/parser',
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'prettier/@typescript-eslint',
+    'plugin:prettier/recommended',
+  ],
+  parserOptions: {
+    sourceType: 'module',
+    project: './tsconfig.json',
+    ecmaVersion: 2018,
+  },
+  rules: {
+    '@typescript-eslint/explicit-function-return-type': 0,
+    '@typescript-eslint/interface-name-prefix': 'off',
+    '@typescript-eslint/no-use-before-define': 'warn',
+    '@typescript-eslint/camelcase': 'warn',
+    '@typescript-eslint/no-empty-interface': 'warn',
+    '@typescript-eslint/no-empty-function': 'warn',
+    '@typescript-eslint/no-namespace': 'warn',
+    'prefer-rest-params': 'warn',
+    'no-else-return': 'error',
+  },
 };
