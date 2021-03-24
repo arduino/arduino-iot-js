@@ -8,10 +8,12 @@ import { IConnection, CloudMessage } from '../connection/IConnection';
 import { ICloudClient, CloudOptions, OnMessageCallback, CloudMessageValue } from './ICloudClient';
 
 const NOOP = () => null;
+type PropertyCallbacks = { cb: OnMessageCallback<any>; name: string; thingId: string };
 export class CloudClient implements ICloudClient {
   private connection: IConnection;
   private subscriptions: { [key: string]: Subscription[] } = {};
   private callbacks: { [key: string]: OnMessageCallback<any>[] } = {};
+  private propertiesCbs: { [key: string]: PropertyCallbacks[] } = {};
 
   private options: CloudOptions = {
     ssl: false,
@@ -71,6 +73,7 @@ export class CloudClient implements ICloudClient {
       Object.values(this.subscriptions).forEach((subs, topic) => {
         subs.forEach((sub) => sub.unsubscribe());
         delete this.callbacks[topic];
+        delete this.propertiesCbs[topic];
         delete this.subscriptions[topic];
       });
 
@@ -96,9 +99,13 @@ export class CloudClient implements ICloudClient {
           this.subscriptions[topic].forEach((sub) => sub.unsubscribe());
           delete this.subscriptions[topic];
 
-          const callbacks = [...this.callbacks[topic]];
+          const callbacks = this.callbacks[topic] ? [...this.callbacks[topic]] : [];
+          const properties = this.propertiesCbs[topic] ? [...this.propertiesCbs[topic]] : [];
+
           delete this.callbacks[topic];
+          delete this.propertiesCbs[topic];
           callbacks.forEach((cb) => this.subscribe(topic, cb));
+          properties.forEach(({ thingId, name, cb }) => this.onPropertyValue(thingId, name, cb));
         });
 
         const { onConnected = NOOP } = this.options;
@@ -166,10 +173,10 @@ export class CloudClient implements ICloudClient {
 
     const topic = `/a/t/${thingId}/e/o`;
 
-    this.callbacks[topic] = this.callbacks[topic] = [];
-    this.subscriptions[topic] = this.subscriptions[topic] = [];
+    this.propertiesCbs[topic] = this.propertiesCbs[topic] || [];
+    this.subscriptions[topic] = this.subscriptions[topic] || [];
 
-    this.callbacks[topic].push(cb);
+    this.propertiesCbs[topic].push({ thingId, name, cb });
     this.subscriptions[topic].push(
       this.messagesFrom(topic)
         .pipe(filter((v) => v.propertyName === name))
@@ -180,10 +187,10 @@ export class CloudClient implements ICloudClient {
   private subscribe<T extends CloudMessageValue>(topic: string, cb: OnMessageCallback<T>): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.callbacks[topic] = this.callbacks[topic] = [];
+        this.callbacks[topic] = this.callbacks[topic] || [];
         this.callbacks[topic].push(cb);
 
-        this.subscriptions[topic] = this.subscriptions[topic] = [];
+        this.subscriptions[topic] = this.subscriptions[topic] || [];
         this.subscriptions[topic].push(this.messagesFrom(topic).subscribe((v) => cb(v.value as T)));
 
         return resolve();
