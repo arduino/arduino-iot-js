@@ -23,7 +23,7 @@
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-commonjs": "^19.0.1",
     "@rollup/plugin-node-resolve": "^8.0.1",
     "@rollup/plugin-url": "^5.0.1",
     "@types/expect.js": "~0.3.29",
