@@ -1,0 +1,56 @@
+name: "[PR] Verify App Version"
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  get-current-version:
+    name: Get Current Version
+    runs-on: ubuntu-latest
+    if: ${{ github.base_ref == 'main' }}
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v1
+
+      - id: get_version
+        name: Get version
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          echo "::set-output name=version::${version}"
+
+  get-main-version:
+    name: Get Main Version
+    runs-on: ubuntu-latest
+    if: ${{ github.base_ref == 'main' }}
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          ref: main
+
+      - id: get_version
+        name: Get version
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          echo "::set-output name=version::${version}" 
+
+  verify:
+    name: Verify versions
+    if: ${{ github.base_ref == 'main' }}
+    needs: [get-current-version, get-main-version]
+    runs-on: ubuntu-latest
+    steps:
+      - id: verify_versions
+        name: Verify versions
+        shell: bash
+        run: |
+          if [[ ${{ needs.get-current-version.outputs.version }} > ${{ needs.get-main-version.outputs.version }} ]] ; then
+            echo 'Version is ok!'
+          else
+            echo 'Must bump app version' && exit 1
+          fi
+        
+        
