@@ -8,7 +8,7 @@ jobs:
   get-current-version:
     name: Get Current Version
     runs-on: ubuntu-latest
-    if: ${{ github.base_ref == 'main' }}
+    if: ${{ github.base_ref == 'master' }}
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -20,16 +20,16 @@ jobs:
           version=$(node -p 'require("./package.json").version')
           echo "::set-output name=version::${version}"
 
-  get-main-version:
-    name: Get Main Version
+  get-master-version:
+    name: Get master Version
     runs-on: ubuntu-latest
-    if: ${{ github.base_ref == 'main' }}
+    if: ${{ github.base_ref == 'master' }}
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v1
         with:
-          ref: main
+          ref: master
 
       - id: get_version
         name: Get version
@@ -39,15 +39,15 @@ jobs:
 
   verify:
     name: Verify versions
-    if: ${{ github.base_ref == 'main' }}
-    needs: [get-current-version, get-main-version]
+    if: ${{ github.base_ref == 'master' }}
+    needs: [get-current-version, get-master-version]
     runs-on: ubuntu-latest
     steps:
       - id: verify_versions
         name: Verify versions
         shell: bash
         run: |
-          if [[ ${{ needs.get-current-version.outputs.version }} > ${{ needs.get-main-version.outputs.version }} ]] ; then
+          if [[ ${{ needs.get-current-version.outputs.version }} > ${{ needs.get-master-version.outputs.version }} ]] ; then
             echo 'Version is ok!'
           else
             echo 'Must bump app version' && exit 1
