@@ -17,8 +17,8 @@
   "dependencies": {
     "@arduino/cbor-js": "arduino/cbor-js",
     "jws": "^4.0.0",
-    "mqtt": "4.1.0",
-    "node-fetch": "^2.6.0",
+    "mqtt": "^4.3.7",
+    "node-fetch": "^2.6.7",
     "rxjs": "^6.5.5",
     "whatwg-fetch": "^3.0.0"
   },
