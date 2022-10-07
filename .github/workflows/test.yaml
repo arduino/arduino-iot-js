@@ -10,6 +10,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      REPO_ACCESS_TOKEN: ${{ secret.REPO_ACCESS_TOKEN }}
     steps:
       - name: Disable EOL conversions
         run: git config --global core.autocrlf false
