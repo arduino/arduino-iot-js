@@ -69,17 +69,8 @@ describe('Test the library basic functionalities', () => {
         })
     });
 
-    it('Simulate client write to cloud monitor', () => {
-      return ArduinoIoTCloud.writeCloudMonitor(deviceId, `this is a test ${Math.random()}`)
-    });
-
     it('Simulate device write to cloud monitor', () => {
       return ArduinoIoTCloud.sendMessage(`/a/d/${deviceId}/s/o`, `this is a test ${Math.random()}`);
-    });
-
-    it('Simulate device write and client read his message from cloud monitor', async (done) => {
-      await ArduinoIoTCloud.openCloudMonitor(deviceId, () => done());
-      return ArduinoIoTCloud.sendMessage(`/a/d/${deviceId}/s/o`, `This is a test ${new Date()}`);
     });
 
     it('Simulate client read integer property sent by device', async (done) => {
