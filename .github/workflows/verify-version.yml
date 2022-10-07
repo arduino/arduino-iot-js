@@ -21,7 +21,7 @@ jobs:
           echo "::set-output name=version::${version}"
 
   get-master-version:
-    name: Get master Version
+    name: Get Master Version
     runs-on: ubuntu-latest
     if: ${{ github.base_ref == 'master' }}
     outputs:
