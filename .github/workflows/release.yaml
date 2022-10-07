@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      REPO_ACCESS_TOKEN: ${{ github.token }}
+      REPO_ACCESS_TOKEN: ${{ secret.REPO_ACCESS_TOKEN }}
 
     steps:
       - name: Disable EOL conversions
