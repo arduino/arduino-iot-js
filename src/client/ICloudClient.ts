@@ -41,11 +41,6 @@ export interface ICloudClient {
   sendMessage(topic: string, message: string): Promise<void>;
   sendMessage(topic: string, message: ArrayBuffer): Promise<void>;
 
-  openCloudMonitor<T extends CloudMessageValue>(deviceId: string, cb: OnMessageCallback<T>): Promise<void>;
-  writeCloudMonitor(deviceId: string, message: string): Promise<void>;
-  writeCloudMonitor(deviceId: string, message: ArrayBuffer): Promise<void>;
-  closeCloudMonitor(deviceId: string): Promise<void>;
-
   sendProperty<T extends CloudMessageValue>(thingId: string, name: string, value: T, timestamp?: number): Promise<void>;
   onPropertyValue<T extends CloudMessageValue>(thingId: string, name: string, cb: OnMessageCallback<T>): Promise<void>;
 }

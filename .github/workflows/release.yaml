@@ -1,17 +1,16 @@
-name: "[PR] Run Tests"
+name: Release Lib
 
-on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
+on: 
   push:
-    branches:
-        - master
+    tags:
+      - '*'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
       REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+
     steps:
       - name: Disable EOL conversions
         run: git config --global core.autocrlf false
@@ -23,9 +22,13 @@ jobs:
         uses: actions/setup-node@v1        
         with:
             node-version: '12'
+      
       - run: npm install
       - run: npm run lint
       - run: npm run test
         env:
             CLIENT_ID: ${{ secrets.CLIENT_ID }}
             CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      
+      - run: npm run build
+      - run: npm publish

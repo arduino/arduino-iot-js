@@ -137,18 +137,6 @@ export class CloudClient implements ICloudClient {
     });
   }
 
-  public openCloudMonitor<T extends CloudMessageValue>(deviceId: string, cb: OnMessageCallback<T>): Promise<void> {
-    return this.subscribe(`/a/d/${deviceId}/s/o`, cb);
-  }
-
-  public writeCloudMonitor(deviceId: string, message: string | ArrayBuffer): Promise<void> {
-    return this.sendMessage(`/a/d/${deviceId}/s/i`, message);
-  }
-
-  public closeCloudMonitor(deviceId: string): Promise<void> {
-    return this.unsubscribe(`/a/d/${deviceId}/s/o`);
-  }
-
   public async sendProperty<T extends CloudMessageValue>(
     thingId: string,
     name: string,
