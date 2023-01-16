@@ -28,7 +28,7 @@ import { APIConnectionBuilder } from './builder/APIConnectionBuilder';
 import { TokenConnectionBuilder } from './builder/TokenConnectionBuilder';
 
 const builders = [
-  new TokenConnectionBuilder(),
+  new TokenConnectionBuilder(mqtt.connect),
   new APIConnectionBuilder(HttpClientFactory.Create(fetch), mqtt.connect),
 ];
 const ArduinoIoTCloud = new CloudClient(builders);
