@@ -20,7 +20,7 @@ export default {
     resolve(),
     typescript(),
     commonjs(),
-    terser(),
+    // terser(),
     sizes()
   ]
 };

@@ -1,5 +1,5 @@
 import jws from 'jws';
-import mqtt from 'mqtt';
+import mqtt, { MqttClient } from 'mqtt';
 import { Observable, Subject } from 'rxjs';
 
 import SenML from '../senML';
@@ -34,7 +34,12 @@ export class Connection implements IConnection {
     });
   }
 
-  public static async From(host: string, port: string | number, token: string): Promise<IConnection> {
+  public static async From(
+    host: string,
+    port: string | number,
+    token: string,
+    mqttConnect: (string, IClientOptions) => MqttClient
+  ): Promise<IConnection> {
     if (!token) throw new Error('connection failed: you need to provide a valid token');
     if (!host) throw new Error('connection failed: you need to provide a valid host (broker)');
 
@@ -46,7 +51,7 @@ export class Connection implements IConnection {
     };
 
     const connection = new Connection();
-    connection.client = mqtt.connect(`wss://${host}:${port}/mqtt`, {
+    connection.client = mqttConnect(`wss://${host}:${port}/mqtt`, {
       ...BaseConnectionOptions,
       ...options,
     });
@@ -106,7 +111,8 @@ export class Connection implements IConnection {
       else valueToSend = value;
     });
 
-    if (valueToSend !== {}) messages.push({ topic, propertyName: current, value: valueToSend });
+    // the condition `if (valueToSend !== {}) ` has been removed bc it always evaluates to true
+    messages.push({ topic, propertyName: current, value: valueToSend });
 
     return messages;
   }

@@ -162,3 +162,31 @@ ArduinoIoTCloud.connect(options)
   })
   .catch(error => console.error(error));
 ```
+
+## Development
+
+### Testing
+In order to test the library you have to export a couple of environment variables and then
+launch a specific `npm` script as follows:
+
+```sh
+$ export CLIENT_ID=<YOUR_CLIENT_ID>
+$ export CLIENT_SECRET=<YOUR_CLIENT_SECRET>
+$ npm run test
+```
+
+## Changelog
+### [0.9.0] - 2023-01-16
+
+#### Changed
+A few development settings have been updated, this should not affect how the library works.
+- 'mqtt' is imported differently if the library is used in the browser or in node.
+  In browser we're using 'mqtt/dist/mqtt' because of some issues with React with some bundlers (namely, Parcel 2)
+  
+  See:
+
+  [https://github.com/mqttjs/MQTT.js/issues/1412#issuecomment-1193363330](https://github.com/mqttjs/MQTT.js/issues/1412#issuecomment-1193363330)
+
+  [https://github.com/mqttjs/MQTT.js/issues/1233](https://github.com/mqttjs/MQTT.js/issues/1233)
+
+- updated README file with this changelog and some instructions about testing
