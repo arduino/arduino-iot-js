@@ -1,5 +1,5 @@
 import jws from 'jws';
-import mqtt, { MqttClient } from 'mqtt';
+import mqtt from 'mqtt';
 import { Observable, Subject } from 'rxjs';
 
 import SenML from '../senML';
@@ -38,7 +38,7 @@ export class Connection implements IConnection {
     host: string,
     port: string | number,
     token: string,
-    mqttConnect: (string, IClientOptions) => MqttClient
+    mqttConnect: (string, IClientOptions) => mqtt.MqttClient
   ): Promise<IConnection> {
     if (!token) throw new Error('connection failed: you need to provide a valid token');
     if (!host) throw new Error('connection failed: you need to provide a valid host (broker)');
