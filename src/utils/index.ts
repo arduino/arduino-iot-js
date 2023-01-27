@@ -31,6 +31,10 @@ function isArray<T>(value: CloudMessageValue): value is T[] {
   return Array.isArray(value);
 }
 
+function isNotAnEmptyObject(value): boolean {
+  return !(typeof value === 'object' && Object.keys(value).length == 0);
+}
+
 function toArrayBuffer(buf: { length: number }): ArrayBuffer {
   const ab = new ArrayBuffer(buf.length);
   const view = new Uint8Array(ab);
@@ -69,4 +73,5 @@ export default {
   toArrayBuffer,
   toBuffer,
   arrayBufferToBase64,
+  isNotAnEmptyObject,
 };

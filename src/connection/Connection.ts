@@ -111,9 +111,8 @@ export class Connection implements IConnection {
       else valueToSend = value;
     });
 
-    // If the message is an object, and it's empty, it makes no sense to send it
-    // All other messages (e.g. non-empty objects or primitives) must be sent
-    if (!(typeof valueToSend === 'object' && Object.keys(valueToSend).length == 0)) {
+    // Checking if valueToSend is NOT {}
+    if (Utils.isNotAnEmptyObject(valueToSend)) {
       messages.push({ topic, propertyName: current, value: valueToSend });
     }
 
