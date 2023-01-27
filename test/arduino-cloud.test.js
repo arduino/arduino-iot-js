@@ -92,6 +92,12 @@ describe('Test the library basic functionalities', () => {
       await ArduinoIoTCloud.onPropertyValue(thingId, propertyBoolName, (value) => value === propertyBoolVal ? done() : null);
       sendPropertyAsDevice(deviceId, thingId, propertyBoolName, propertyBoolVal);
     });
+
+    it('Simulate client read boolean as FALSE property sent by device', async (done) => {
+      await ArduinoIoTCloud.onPropertyValue(thingId, propertyBoolName, (value) => !value ? done() : null);
+      sendPropertyAsDevice(deviceId, thingId, propertyBoolName, false);
+    });
+
   })
 });
 

@@ -1,3 +1,4 @@
+import { MqttClient } from 'mqtt';
 import { IHttpClient } from '../http/IHttpClient';
 import { Connection } from '../connection/Connection';
 import { IConnection } from '../connection/IConnection';
@@ -10,8 +11,12 @@ type AccessResponse = {
   token_type: string;
 };
 
+function isApiOptions(options: CloudOptions): options is APIOptions {
+  return !!(options as APIOptions).clientId;
+}
+
 export class APIConnectionBuilder implements IConnectionBuilder {
-  constructor(private client: IHttpClient) {}
+  constructor(private client: IHttpClient, private mqttConnect: (string, IClientOptions) => MqttClient) {}
 
   public canBuild(options: CloudOptions): boolean {
     return isApiOptions(options);
@@ -27,11 +32,7 @@ export class APIConnectionBuilder implements IConnectionBuilder {
     body.append('client_secret', options.clientSecret);
     body.append('audience', options.audience || 'https://api2.arduino.cc/iot');
 
-    const { access_token } = await this.client.post<AccessResponse>(apiUrl, body, headers);
-    return Connection.From(options.host, options.port, access_token);
+    const { access_token: accessToken } = await this.client.post<AccessResponse>(apiUrl, body, headers);
+    return Connection.From(options.host, options.port, accessToken, this.mqttConnect);
   }
-}
-
-function isApiOptions(options: CloudOptions): options is APIOptions {
-  return !!(options as APIOptions).clientId;
 }

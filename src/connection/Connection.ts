@@ -34,7 +34,12 @@ export class Connection implements IConnection {
     });
   }
 
-  public static async From(host: string, port: string | number, token: string): Promise<IConnection> {
+  public static async From(
+    host: string,
+    port: string | number,
+    token: string,
+    mqttConnect: (string, IClientOptions) => mqtt.MqttClient
+  ): Promise<IConnection> {
     if (!token) throw new Error('connection failed: you need to provide a valid token');
     if (!host) throw new Error('connection failed: you need to provide a valid host (broker)');
 
@@ -46,7 +51,7 @@ export class Connection implements IConnection {
     };
 
     const connection = new Connection();
-    connection.client = mqtt.connect(`wss://${host}:${port}/mqtt`, {
+    connection.client = mqttConnect(`wss://${host}:${port}/mqtt`, {
       ...BaseConnectionOptions,
       ...options,
     });
@@ -106,7 +111,10 @@ export class Connection implements IConnection {
       else valueToSend = value;
     });
 
-    if (valueToSend !== {}) messages.push({ topic, propertyName: current, value: valueToSend });
+    // Checking if valueToSend is NOT {}
+    if (Utils.isNotAnEmptyObject(valueToSend)) {
+      messages.push({ topic, propertyName: current, value: valueToSend });
+    }
 
     return messages;
   }
