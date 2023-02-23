@@ -141,7 +141,7 @@ ArduinoIoTCloud.connect(options)
     const ArduinoIoTClient = ArduinoIoTApi.ApiClient.instance;
     ArduinoIoTClient.authentications['oauth2'].accessToken = ArduinoIoTCloud.getToken();
 
-    const thingsApi = new ArduinoIoTAPI.ThingsV2Api(ArduinoIoTClient);
+    const thingsApi = new ArduinoIoTApi.ThingsV2Api(ArduinoIoTClient);
     const propertiesAPI = new ArduinoIoTApi.PropertiesV2Api(ArduinoIoTClient);
 
     return thingsApi.thingsV2List()
