@@ -17,7 +17,7 @@ export class CloudClient implements ICloudClient {
 
   private options: CloudOptions = {
     ssl: false,
-    host: 'wss.iot.arduino.cc',
+    host: 'wss-vernemq-production-omega-1858855899.us-east-1.elb.amazonaws.com',
     port: 8443,
     token: undefined,
     useCloudProtocolV2: true,
