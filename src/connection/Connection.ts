@@ -11,6 +11,7 @@ const BaseConnectionOptions: Partial<ConnectionOptions> = {
   clean: true,
   keepalive: 30,
   properties: {},
+  rejectUnauthorized: false,
   protocolVersion: 4,
   connectTimeout: 30000,
 };
@@ -49,6 +50,8 @@ export class Connection implements IConnection {
       username: userId,
       password: token,
     };
+    console.log(userId);
+
 
     const connection = new Connection();
     connection.client = mqttConnect(`wss://${host}:${port}/mqtt`, {
