@@ -55,7 +55,7 @@ jobs:
             [ "$1" = "$2" ] && return 1 || verlte $1 $2
           }
 
-          if verlt  ${{ needs.get-master-version.outputs.version }} ]] ${{ needs.get-current-version.outputs.version }}  ; then
+          if verlt  ${{ needs.get-master-version.outputs.version }} ${{ needs.get-current-version.outputs.version }}  ; then
             echo 'Version is ok!'
           else
             echo 'Must bump app version' && exit 1
