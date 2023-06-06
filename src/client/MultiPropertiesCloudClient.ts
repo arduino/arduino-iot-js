@@ -7,7 +7,9 @@ import { OnMessageCallback, CloudMessageValue, IMultiPropertiesCloudClient, ITok
 
 export type PropertyCallbacks = { cb: OnMessageCallback<any>; name: string; thingId: string };
 
-export class MultiPropertiesCloudClient extends BaseCloudClient<ITokenConnection>
+// eslint-disable-next-line prettier/prettier
+export class MultiPropertiesCloudClient
+  extends BaseCloudClient<ITokenConnection>
   implements IMultiPropertiesCloudClient, ITokenCloudClient {
   private subscriptions: { [key: string]: Subscription[] } = {};
   private propertiesCbs: { [key: string]: PropertyCallbacks[] } = {};
