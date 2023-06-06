@@ -1,7 +1,7 @@
 /*
- * Copyright 2020 ARDUINO SA (http://www.arduino.cc/)
+ * Copyright 2023 ARDUINO SA (http://www.arduino.cc/)
  * This file is part of arduino-iot-js.
- * Copyright (c) 2020
+ * Copyright (c) 2023
  * Authors: Fabrizio Mirabito, Francesco Pirrotta
  *
  * This software is released under:
@@ -18,21 +18,24 @@
  *
  */
 
-import SenML from './senML';
-import fetch from 'node-fetch';
 import mqtt from 'mqtt';
+import fetch from 'node-fetch';
 
+import * as SenML from './senML';
+import { ArduinoIoTCloudFactory } from './ArduinoIoTCloud';
 import { HttpClientFactory } from './http/HttpClientFactory';
-import { CloudClient } from './client/CloudClient';
-import { APIConnectionBuilder } from './builder/APIConnectionBuilder';
-import { TokenConnectionBuilder } from './builder/TokenConnectionBuilder';
+import { APIClientBuilder } from './builder/APIClientBuilder';
+import { TokenClientBuilder } from './builder/TokenClientBuilder';
+import { CredentialsClientBuilder } from './builder/CredentialsClientBuilder';
 
 const builders = [
-  new TokenConnectionBuilder(mqtt.connect),
-  new APIConnectionBuilder(HttpClientFactory.Create(fetch), mqtt.connect),
+  new TokenClientBuilder(mqtt.connect),
+  new CredentialsClientBuilder(mqtt.connect),
+  new APIClientBuilder(HttpClientFactory.Create(fetch), mqtt.connect),
 ];
-const ArduinoIoTCloud = new CloudClient(builders);
+const ArduinoIoTCloud = ArduinoIoTCloudFactory(builders);
 
 export { SenML };
 export { ArduinoIoTCloud };
-export { CloudOptions, CloudMessageValue } from './client/ICloudClient';
+export { CloudOptions } from './CloudOptions';
+export { CloudMessageValue } from './client/ICloudClient';

@@ -1,36 +1,38 @@
-import CBOR, { SenML } from '@arduino/cbor-js';
+import BaseCBOR, { SenML } from '@arduino/cbor-js';
 
-import Utils from '../utils';
+import * as Utils from '../utils';
 import { CloudMessageValue } from '../client/ICloudClient';
 
-function isPropertyValue(message: SenML | string[]): message is SenML {
+export const CBOR = BaseCBOR;
+
+export function isPropertyValue(message: SenML | string[]): message is SenML {
   return !!(message as SenML).n;
 }
 
-function isNil<T>(v: T): boolean {
+export function isNil<T>(v: T): boolean {
   return v === null || v === undefined;
 }
 
-function takeFrom(...values: CloudMessageValue[]): CloudMessageValue {
+export function takeFrom(...values: CloudMessageValue[]): CloudMessageValue {
   return values.find((v) => !isNil(v));
 }
 
-function valueFrom(message: SenML | string[]): CloudMessageValue {
+export function valueFrom(message: SenML | string[]): CloudMessageValue {
   return isPropertyValue(message)
     ? takeFrom(message.v, message.vs, message.vb)
     : takeFrom(message[2], message[3], message[4]);
 }
 
-function nameFrom(property: SenML | string[]): string {
+export function nameFrom(property: SenML | string[]): string {
   return isPropertyValue(property) ? property.n : property[0];
 }
 
-function toString(value: SenML[], numericKeys?: boolean): string {
+export function toString(value: SenML[], numericKeys?: boolean): string {
   const encoded = CBOR.encode(value, numericKeys);
   return Utils.arrayBufferToBase64(encoded);
 }
 
-function toCloudProtocolV2(cborValue: SenML): SenML {
+export function toCloudProtocolV2(cborValue: SenML): SenML {
   const cloudV2CBORValue = {};
   let cborLabel = null;
 
@@ -91,7 +93,7 @@ function toCloudProtocolV2(cborValue: SenML): SenML {
   return cloudV2CBORValue;
 }
 
-function format(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): SenML {
+export function format(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): SenML {
   const parsed: SenML = {};
   if (timestamp !== -1) parsed.bt = timestamp || new Date().getTime();
   parsed.n = name;
@@ -107,7 +109,7 @@ function format(value: CloudMessageValue, name: string, timestamp: number, devic
   return parsed;
 }
 
-function parse(
+export function parse(
   name: string,
   value: CloudMessageValue,
   timestamp: number,
@@ -126,13 +128,3 @@ function parse(
   if (useCloudProtocolV2) cborValue = toCloudProtocolV2(cborValue);
   return cborValue;
 }
-
-export default {
-  CBOR,
-  parse,
-  toString,
-  valueFrom,
-  nameFrom,
-  isPropertyValue,
-  toCloudProtocolV2,
-};

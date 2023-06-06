@@ -1,6 +1,6 @@
 import { CloudMessageValue } from '../client/ICloudClient';
 
-class ArduinoCloudError extends Error {
+export class ArduinoCloudError extends Error {
   constructor(public code: number, message: string) {
     super(message);
     this.name = this.constructor.name;
@@ -11,31 +11,31 @@ class ArduinoCloudError extends Error {
   }
 }
 
-function isObject(value: CloudMessageValue): value is object {
-  return typeof value === 'object';
+export function isObject(value: CloudMessageValue): value is object {
+  return value && typeof value === 'object';
 }
 
-function isNumber(value: CloudMessageValue): value is number {
-  return typeof value === 'number';
+export function isNumber(value: CloudMessageValue): value is number {
+  return value && typeof value === 'number';
 }
 
-function isString(value: CloudMessageValue): value is string {
-  return typeof value === 'string';
+export function isString(value: CloudMessageValue): value is string {
+  return value && typeof value === 'string';
 }
 
-function isBoolean(value: CloudMessageValue): value is boolean {
-  return typeof value === 'boolean';
+export function isBoolean(value: CloudMessageValue): value is boolean {
+  return value && typeof value === 'boolean';
 }
 
-function isArray<T>(value: CloudMessageValue): value is T[] {
-  return Array.isArray(value);
+export function isArray<T>(value: CloudMessageValue): value is T[] {
+  return value && Array.isArray(value);
 }
 
-function isNotAnEmptyObject(value): boolean {
-  return !(typeof value === 'object' && Object.keys(value).length == 0);
+export function isNotAnEmptyObject(value: any): boolean {
+  return !(value && typeof value === 'object' && Object.keys(value).length == 0);
 }
 
-function toArrayBuffer(buf: { length: number }): ArrayBuffer {
+export function toArrayBuffer(buf: { length: number }): ArrayBuffer {
   const ab = new ArrayBuffer(buf.length);
   const view = new Uint8Array(ab);
   for (let i = 0; i < buf.length; ++i) {
@@ -44,8 +44,8 @@ function toArrayBuffer(buf: { length: number }): ArrayBuffer {
   return ab;
 }
 
-function toBuffer(ab: ArrayBuffer): Buffer {
-  const buffer = new Buffer(ab.byteLength);
+export function toBuffer(ab: ArrayBuffer): Buffer {
+  const buffer = Buffer.alloc(ab.byteLength);
   const view = new Uint8Array(ab);
   for (let i = 0; i < buffer.length; ++i) {
     buffer[i] = view[i];
@@ -53,7 +53,7 @@ function toBuffer(ab: ArrayBuffer): Buffer {
   return buffer;
 }
 
-function arrayBufferToBase64(buf: ArrayBuffer): string {
+export function arrayBufferToBase64(buf: ArrayBuffer): string {
   let binary = '';
   const bytes = new Uint8Array(buf);
   const len = bytes.byteLength;
@@ -63,15 +63,6 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
   return window.btoa(binary);
 }
 
-export default {
-  ArduinoCloudError,
-  isObject,
-  isNumber,
-  isString,
-  isBoolean,
-  isArray,
-  toArrayBuffer,
-  toBuffer,
-  arrayBufferToBase64,
-  isNotAnEmptyObject,
-};
+export interface Newable<T> {
+  new (...args: any[]): T;
+}

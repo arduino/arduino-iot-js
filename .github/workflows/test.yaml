@@ -22,7 +22,7 @@ jobs:
       - name: Integration tests
         uses: actions/setup-node@v1        
         with:
-            node-version: '12'
+            node-version: '16'
       - run: npm install
       - run: npm run lint
       - run: npm run test
