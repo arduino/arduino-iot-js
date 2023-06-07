@@ -10,6 +10,9 @@ export class SinglePropertyCloudClient extends BaseCloudClient implements ISingl
   private subscription: Subscription;
   private propertiesCbs: { [key: string]: OnMessageCallback<any>[] } = {};
 
+  private onThingRejection: (reason: any) => void;
+  private onThingResponse: (value: string | PromiseLike<string>) => void;
+
   constructor(connection: IConnection, options: CloudOptions, private deviceTopic: string) {
     super(connection, options);
     this.observe(this.deviceTopic).subscribe(({ value }) => this.onThingIdReceived(value as string));
@@ -23,7 +26,14 @@ export class SinglePropertyCloudClient extends BaseCloudClient implements ISingl
   }
 
   private onThingIdReceived(thingId: string): void {
+    if (!thingId) {
+      if (this.onThingRejection) this.onThingRejection(new Error('Error: no thing associated'));
+      return;
+    }
+
+    console.log('found association to thing:', thingId);
     this.thingId = thingId;
+    if (this.onThingResponse) this.onThingResponse(thingId);
     this.subscription = this.observe(`/a/t/${this.thingId}/e/i`).subscribe((v) => {
       (this.propertiesCbs[v.propertyName] || []).forEach((cb) => cb(v.value));
     });
@@ -41,5 +51,15 @@ export class SinglePropertyCloudClient extends BaseCloudClient implements ISingl
 
     this.propertiesCbs[name] = this.propertiesCbs[name] || [];
     this.propertiesCbs[name].push(cb);
+  }
+
+  public async getThing(): Promise<string> {
+    if (this.thingId) return this.thingId;
+
+    return new Promise<string>((res, rej) => {
+      this.onThingResponse = res;
+      this.onThingRejection = rej;
+      setTimeout(() => rej(new Error('Error: no thing associated')), 10000);
+    });
   }
 }
