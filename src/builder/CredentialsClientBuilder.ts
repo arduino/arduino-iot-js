@@ -16,7 +16,8 @@ export class CredentialsClientBuilder implements ICloudClientBuilder {
 
   public async build(options: CredentialsOptions & CloudOptions): Promise<ISinglePropertyCloudClient> {
     const connection = await this.connection(options);
-    return new SinglePropertyCloudClient(connection, options, `/a/d/${options.deviceId}/e/i`);
+    const client = new SinglePropertyCloudClient(connection, options, `/a/d/${options.deviceId}/e/i`);
+    return client.getThing().then(() => client);
   }
 
   private async connection(options: CredentialsOptions & CloudOptions): Promise<IConnection> {
