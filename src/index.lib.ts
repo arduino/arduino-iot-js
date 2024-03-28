@@ -24,9 +24,10 @@ import fetch from 'node-fetch';
 import * as SenML from './senML';
 import { ArduinoIoTCloudFactory } from './ArduinoIoTCloud';
 import { HttpClientFactory } from './http/HttpClientFactory';
-import { APIClientBuilder } from './builder/APIClientBuilder';
-import { TokenClientBuilder } from './builder/TokenClientBuilder';
-import { CredentialsClientBuilder } from './builder/CredentialsClientBuilder';
+import { APIClientBuilder, APIOptions } from './builder/APIClientBuilder';
+import { TokenClientBuilder, BrowserOptions } from './builder/TokenClientBuilder';
+import { CredentialsClientBuilder, CredentialsOptions } from './builder/CredentialsClientBuilder';
+import { ICloudClient, IMultiPropertiesCloudClient, ISinglePropertyCloudClient } from './client/ICloudClient';
 
 const builders = [
   new TokenClientBuilder(mqtt.connect),
@@ -40,3 +41,5 @@ export { ArduinoIoTCloud };
 export { CloudOptions } from './CloudOptions';
 export { CloudMessageValue } from './client/ICloudClient';
 export { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';
+export { APIOptions, BrowserOptions, CredentialsOptions };
+export { ICloudClient, IMultiPropertiesCloudClient, ISinglePropertyCloudClient };
