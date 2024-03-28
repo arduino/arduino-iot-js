@@ -27,9 +27,3 @@ export class CredentialsClientBuilder implements ICloudClientBuilder {
     return connection;
   }
 }
-
-declare global {
-  interface IArduinoIoTCloudFactory {
-    connect(options: CredentialsOptions & Partial<CloudOptions>): Promise<ISinglePropertyCloudClient>;
-  }
-}

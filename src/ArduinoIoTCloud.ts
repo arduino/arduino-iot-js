@@ -1,5 +1,6 @@
 import { CloudOptions } from './CloudOptions';
 import { ICloudClientBuilder } from './builder/ICloudClientBuilder';
+import { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';
 
 export function ArduinoIoTCloudFactory(builders: ICloudClientBuilder[]): IArduinoIoTCloudFactory {
   return {

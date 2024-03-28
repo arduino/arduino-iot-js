@@ -25,9 +25,3 @@ export class TokenClientBuilder implements ICloudClientBuilder {
     return connection;
   }
 }
-
-declare global {
-  interface IArduinoIoTCloudFactory {
-    connect(options: BrowserOptions & Partial<CloudOptions>): Promise<IMultiPropertiesCloudClient>;
-  }
-}

@@ -39,3 +39,4 @@ export { SenML };
 export { ArduinoIoTCloud };
 export { CloudOptions } from './CloudOptions';
 export { CloudMessageValue } from './client/ICloudClient';
+export { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';

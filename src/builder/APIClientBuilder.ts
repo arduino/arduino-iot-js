@@ -12,7 +12,7 @@ type AccessResponse = {
   token_type: string;
 };
 
-type APIOptions = {
+export type APIOptions = {
   apiUrl?: string;
   clientId: string;
   audience?: string;
@@ -49,10 +49,5 @@ export class APIClientBuilder implements ICloudClientBuilder {
     const connection = new Connection.WithToken(host, accessToken, this.mqttConnect);
     await connection.connect();
     return connection;
-  }
-}
-declare global {
-  interface IArduinoIoTCloudFactory {
-    connect(options: APIOptions & Partial<CloudOptions>): Promise<IMultiPropertiesCloudClient>;
   }
 }
