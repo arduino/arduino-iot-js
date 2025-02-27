@@ -102,9 +102,9 @@ export function format(value: CloudMessageValue, name: string, timestamp: number
     parsed.bn = `urn:uuid:${deviceId}`;
   }
 
-  if (Utils.isNumber(value)) parsed.v = value;
-  if (Utils.isString(value)) parsed.vs = value;
-  if (Utils.isBoolean(value)) parsed.vb = value;
+  if (Utils.isNumber(value)) parsed.v = Number(value);
+  if (Utils.isString(value)) parsed.vs = String(value);
+  if (Utils.isBoolean(value)) parsed.vb = Boolean(value);
 
   return parsed;
 }

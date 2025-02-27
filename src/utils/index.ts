@@ -11,24 +11,28 @@ export class ArduinoCloudError extends Error {
   }
 }
 
+export function isNil(value: unknown): value is undefined | null {
+  return value === undefined || value == null;
+}
+
 export function isObject(value: CloudMessageValue): value is object {
-  return value && typeof value === 'object';
+  return !isNil(value) && typeof value === 'object';
 }
 
 export function isNumber(value: CloudMessageValue): value is number {
-  return value && typeof value === 'number';
+  return !isNil(value) && typeof value === 'number';
 }
 
 export function isString(value: CloudMessageValue): value is string {
-  return value && typeof value === 'string';
+  return !isNil(value) && typeof value === 'string';
 }
 
 export function isBoolean(value: CloudMessageValue): value is boolean {
-  return value && typeof value === 'boolean';
+  return !isNil(value) && typeof value === 'boolean';
 }
 
 export function isArray<T>(value: CloudMessageValue): value is T[] {
-  return value && Array.isArray(value);
+  return !isNil(value) && Array.isArray(value);
 }
 
 export function isNotAnEmptyObject(value: any): boolean {
