@@ -8,6 +8,6 @@ export type CloudFactoryOptions = (APIOptions | CredentialsOptions | BrowserOpti
 
 export interface IArduinoIoTCloudFactory {
   connect(options: APIOptions & Partial<CloudOptions>): Promise<IMultiPropertiesCloudClient>;
-  connect(options: CredentialsOptions & Partial<CloudOptions>): Promise<ISinglePropertyCloudClient>;
   connect(options: BrowserOptions & Partial<CloudOptions>): Promise<IMultiPropertiesCloudClient>;
+  connect(options: CredentialsOptions & Partial<CloudOptions>): Promise<ISinglePropertyCloudClient>;
 }

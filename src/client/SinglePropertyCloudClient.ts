@@ -31,7 +31,6 @@ export class SinglePropertyCloudClient extends BaseCloudClient implements ISingl
       return;
     }
 
-    console.log('found association to thing:', thingId);
     this.thingId = thingId;
     if (this.onThingResponse) this.onThingResponse(thingId);
     this.subscription = this.observe(`/a/t/${this.thingId}/e/i`).subscribe((v) => {
