@@ -63,12 +63,14 @@ export class BaseCloudClient<T extends IConnection = IConnection> implements ICl
       if (err) throw new Error(`subscription failed: ${err.toString()}`);
 
       subscription = this.connection.messages.pipe(filter((v) => v.topic === topic)).subscribe((v) => subject.next(v));
+      this.options.onConnected();
     });
 
     const originalMethod = subject.unsubscribe;
     subject.unsubscribe = () => {
       subscription.unsubscribe();
       originalMethod();
+      this.options.onDisconnect();
     };
 
     return subject;
