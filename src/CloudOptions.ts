@@ -2,6 +2,7 @@ export type CloudOptions = {
   host?: string;
   port?: string | number;
   useCloudProtocolV2?: boolean;
+  ssl?: boolean;
   onOffline?: () => void;
   onConnected?: () => void;
   onDisconnect?: (message?: any) => void;
