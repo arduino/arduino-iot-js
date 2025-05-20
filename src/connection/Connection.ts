@@ -1,29 +1,21 @@
 import mqtt from 'mqtt';
 import { Observable, Subject } from 'rxjs';
 
-import SenML from '../senML';
-import Utils from '../utils';
+import * as SenML from '../senML';
+import * as Utils from '../utils';
 import { CloudMessageValue } from '../client/ICloudClient';
-import { IConnection, CloudMessage, ConnectionOptions } from './IConnection';
-
-const BaseConnectionOptions: Partial<ConnectionOptions> = {
-  clean: true,
-  keepalive: 30,
-  properties: {},
-  protocolVersion: 4,
-  connectTimeout: 30000,
-};
-
+import { MqttConnection } from '../builder/ICloudClientBuilder';
+import { IConnection, CloudMessage, BaseConnectionOptions, ITokenConnection, ConnectionOptions } from './IConnection';
 export class Connection implements IConnection {
-  public token: string;
+  private _client: mqtt.MqttClient;
+  protected options: ConnectionOptions;
   public messages: Observable<CloudMessage>;
 
-  private _client: mqtt.MqttClient;
-  private get client(): mqtt.MqttClient {
+  protected get client(): mqtt.MqttClient {
     return this._client;
   }
 
-  private set client(client: mqtt.MqttClient) {
+  protected set client(client: mqtt.MqttClient) {
     this._client = client;
     const messages = (this.messages = new Subject<CloudMessage>());
 
@@ -33,39 +25,39 @@ export class Connection implements IConnection {
     });
   }
 
-  public static async From(
-    host: string,
-    port: string | number,
-    token: string,
-    mqttConnect: (string, IClientOptions) => mqtt.MqttClient
-  ): Promise<IConnection> {
-    if (!token) throw new Error('connection failed: you need to provide a valid token');
+  constructor(
+    protected host: string,
+    protected username: string,
+    protected password: string,
+    protected mqttConnect: MqttConnection
+  ) {
+    if (!username) throw new Error('connection failed: you need to provide a valid username');
+    if (!password) throw new Error('connection failed: you need to provide a valid password');
     if (!host) throw new Error('connection failed: you need to provide a valid host (broker)');
 
-    const userId = Utils.decode(token)['http://arduino.cc/id'];
-    const options = {
-      clientId: `${userId}:${new Date().getTime()}`,
-      username: userId,
-      password: token,
-    };
-
-    const connection = new Connection();
-    connection.client = mqttConnect(`wss://${host}:${port}/mqtt`, {
+    this.options = {
       ...BaseConnectionOptions,
-      ...options,
-    });
-    connection.token = token;
-    return connection;
+      username,
+      password,
+      clientId: username,
+    };
   }
 
-  public on(event: any, cb: any): IConnection {
-    this.client.on(event, cb);
-    return this;
+  public connect(options?: Partial<ConnectionOptions>): Promise<boolean> {
+    return new Promise<boolean>((res, rej) => {
+      this.options = options ? { ...this.options, ...options } : this.options;
+
+      this.client = this.mqttConnect(this.host, this.options);
+      this.client.once('connect', () => res(true));
+      this.client.once('close', () => rej(new Error('connection failed: client not connected')));
+    });
   }
+
   public end(force?: boolean, opts?: Record<string, any>, cb?: mqtt.CloseCallback): IConnection {
     this.client.end(force, opts, cb);
     return this;
   }
+
   public reconnect(opts?: mqtt.IClientReconnectOptions): IConnection {
     this.client.reconnect(opts);
     return this;
@@ -117,4 +109,37 @@ export class Connection implements IConnection {
 
     return messages;
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Connection {
+  type TokenConnection = new (host: string, token: string, mqttConnect: MqttConnection) => ITokenConnection;
+
+  export const WithToken: TokenConnection = class extends Connection implements ITokenConnection {
+    constructor(host: string, protected token: string, mqttConnect: MqttConnection) {
+      super(host, Utils.decode(token)['http://arduino.cc/id'], token, mqttConnect);
+    }
+
+    public async connect(options?: Partial<ConnectionOptions>): Promise<boolean> {
+      await super.connect(options);
+      this.token = this.options.password;
+      return true;
+    }
+
+    public async updateToken(newToken: string): Promise<void> {
+      while (true) {
+        try {
+          this.end();
+          await this.connect({ ...this.options, password: newToken });
+        } catch (error) {
+          console.error(error);
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      }
+    }
+
+    public getToken(): string {
+      return this.token;
+    }
+  };
 }

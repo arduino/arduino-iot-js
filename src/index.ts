@@ -1,7 +1,7 @@
 /*
- * Copyright 2020 ARDUINO SA (http://www.arduino.cc/)
+ * Copyright 2023 ARDUINO SA (http://www.arduino.cc/)
  * This file is part of arduino-iot-js.
- * Copyright (c) 2020
+ * Copyright (c) 2023
  * Authors: Fabrizio Mirabito, Francesco Pirrotta
  *
  * This software is released under:
@@ -19,19 +19,33 @@
  */
 
 import 'whatwg-fetch';
-import mqtt from 'mqtt/dist/mqtt';
-import SenML from './senML';
+import mqtt from 'mqtt';
+
+import * as SenML from './senML';
+import { ArduinoIoTCloudFactory } from './ArduinoIoTCloud';
 import { HttpClientFactory } from './http/HttpClientFactory';
-import { CloudClient } from './client/CloudClient';
-import { APIConnectionBuilder } from './builder/APIConnectionBuilder';
-import { TokenConnectionBuilder } from './builder/TokenConnectionBuilder';
+import { APIClientBuilder, APIOptions } from './builder/APIClientBuilder';
+import { TokenClientBuilder, BrowserOptions } from './builder/TokenClientBuilder';
+import { CredentialsClientBuilder, CredentialsOptions } from './builder/CredentialsClientBuilder';
+import {
+  ICloudClient,
+  IMultiPropertiesCloudClient,
+  ITokenCloudClient,
+  ISinglePropertyCloudClient,
+} from './client/ICloudClient';
 
 const builders = [
-  new TokenConnectionBuilder(mqtt.connect),
-  new APIConnectionBuilder(HttpClientFactory.Create(fetch), mqtt.connect),
+  new TokenClientBuilder(mqtt.connect),
+  new CredentialsClientBuilder(mqtt.connect),
+  new APIClientBuilder(HttpClientFactory.Create(fetch), mqtt.connect),
 ];
-const ArduinoIoTCloud = new CloudClient(builders);
+
+const ArduinoIoTCloud = ArduinoIoTCloudFactory(builders);
 
 export { SenML };
 export { ArduinoIoTCloud };
-export { CloudOptions, CloudMessageValue } from './client/ICloudClient';
+export { CloudOptions } from './CloudOptions';
+export { CloudMessageValue } from './client/ICloudClient';
+export { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';
+export { APIOptions, BrowserOptions, CredentialsOptions };
+export { ICloudClient, IMultiPropertiesCloudClient, ITokenCloudClient, ISinglePropertyCloudClient };
