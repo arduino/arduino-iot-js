@@ -63,6 +63,54 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
   return window.btoa(binary);
 }
 
+function isValidObject(obj: unknown): obj is object {
+  return Object.prototype.toString.call(obj) === '[object Object]';
+}
+
+function safeJsonParse(obj: unknown): object {
+  if (isValidObject(obj)) return obj;
+  try {
+    return JSON.parse(obj as string);
+  } catch (e) {
+    return undefined;
+  }
+}
+
+function headerFromJWS(signature: string): object {
+  const encodedHeader = signature.split('.', 1)[0];
+  return safeJsonParse(Buffer.from(encodedHeader, 'base64').toString('binary'));
+}
+
+function toString(object: unknown): string {
+  if (typeof object === 'string') return object;
+  if (typeof object === 'number' || Buffer.isBuffer(object)) return object.toString();
+  return JSON.stringify(object);
+}
+
+function isValidJws(signature: string): boolean {
+  const JWS_REGEX = /^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/;
+  return JWS_REGEX.test(signature) && !!headerFromJWS(signature);
+}
+
+function payloadFromJWS(signature: string): string {
+  const [_, payload] = signature.split('.');
+  return Buffer.from(payload, 'base64').toString('utf8');
+}
+
+function decode(token: string): string | object {
+  token = toString(token);
+
+  if (!isValidJws(token)) return null;
+
+  const header = headerFromJWS(token);
+  if (!header) return null;
+
+  let payload = payloadFromJWS(token);
+  if (header['typ'] === 'JWT') payload = JSON.parse(payload);
+
+  return payload;
+}
+
 export default {
   ArduinoCloudError,
   isObject,
@@ -74,4 +122,5 @@ export default {
   toBuffer,
   arrayBufferToBase64,
   isNotAnEmptyObject,
+  decode,
 };

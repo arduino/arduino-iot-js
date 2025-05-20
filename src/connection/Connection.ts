@@ -1,4 +1,3 @@
-import jws from 'jws';
 import mqtt from 'mqtt';
 import { Observable, Subject } from 'rxjs';
 
@@ -43,7 +42,7 @@ export class Connection implements IConnection {
     if (!token) throw new Error('connection failed: you need to provide a valid token');
     if (!host) throw new Error('connection failed: you need to provide a valid host (broker)');
 
-    const userId = jws.decode(token).payload['http://arduino.cc/id'];
+    const userId = Utils.decode(token)['http://arduino.cc/id'];
     const options = {
       clientId: `${userId}:${new Date().getTime()}`,
       username: userId,
