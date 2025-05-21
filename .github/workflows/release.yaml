@@ -19,16 +19,17 @@ jobs:
         uses: actions/checkout@master
 
       - name: Integration tests
-        uses: actions/setup-node@v1        
+        uses: actions/setup-node@v3
         with:
-            node-version: '12'
+          node-version: "18.x"
+          cache: "yarn"
       
-      - run: npm install
-      - run: npm run lint
-      - run: npm run test
+      - run: yarn
+      - run: yarn lint
+      - run: yarn test
         env:
             CLIENT_ID: ${{ secrets.CLIENT_ID }}
             CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
       
-      - run: npm run build
+      - run: yarn build
       - run: npm publish
