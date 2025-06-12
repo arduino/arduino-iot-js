@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, ready_for_review, reopened]
   push:
     branches:
-        - master
+      - master
 
 jobs:
   test:
@@ -18,14 +18,19 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@master
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
 
       - name: Integration tests
-        uses: actions/setup-node@v1        
+        uses: actions/setup-node@v3
         with:
-            node-version: '16'
-      - run: npm install
-      - run: npm run lint
-      - run: npm run test
+          node-version: "18.x"
+          cache: "yarn"
+
+      - run: yarn
+      - run: yarn lint
+      - run: yarn test
         env:
-            CLIENT_ID: ${{ secrets.CLIENT_ID }}
-            CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
