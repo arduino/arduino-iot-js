@@ -70,3 +70,51 @@ export function arrayBufferToBase64(buf: ArrayBuffer): string {
 export interface Newable<T> {
   new (...args: any[]): T;
 }
+
+export function isValidObject(obj: unknown): obj is object {
+  return Object.prototype.toString.call(obj) === '[object Object]';
+}
+
+export function safeJsonParse(obj: unknown): object {
+  if (isValidObject(obj)) return obj;
+  try {
+    return JSON.parse(obj as string);
+  } catch (e) {
+    return undefined;
+  }
+}
+
+export function headerFromJWS(signature: string): object {
+  const encodedHeader = signature.split('.', 1)[0];
+  return safeJsonParse(Buffer.from(encodedHeader, 'base64').toString('binary'));
+}
+
+export function toString(object: unknown): string {
+  if (typeof object === 'string') return object;
+  if (typeof object === 'number' || Buffer.isBuffer(object)) return object.toString();
+  return JSON.stringify(object);
+}
+
+export function isValidJws(signature: string): boolean {
+  const JWS_REGEX = /^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/;
+  return JWS_REGEX.test(signature) && !!headerFromJWS(signature);
+}
+
+export function payloadFromJWS(signature: string): string {
+  const [_, payload] = signature.split('.');
+  return Buffer.from(payload, 'base64').toString('utf8');
+}
+
+export function decode(token: string): string | object {
+  token = toString(token);
+
+  if (!isValidJws(token)) return null;
+
+  const header = headerFromJWS(token);
+  if (!header) return null;
+
+  let payload = payloadFromJWS(token);
+  if (header['typ'] === 'JWT') payload = JSON.parse(payload);
+
+  return payload;
+}

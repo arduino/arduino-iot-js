@@ -1,4 +1,3 @@
-import jws from 'jws';
 import mqtt from 'mqtt';
 import { Observable, Subject } from 'rxjs';
 
@@ -118,7 +117,7 @@ export namespace Connection {
 
   export const WithToken: TokenConnection = class extends Connection implements ITokenConnection {
     constructor(host: string, protected token: string, mqttConnect: MqttConnection) {
-      super(host, jws.decode(token).payload['http://arduino.cc/id'], token, mqttConnect);
+      super(host, Utils.decode(token)['http://arduino.cc/id'], token, mqttConnect);
     }
 
     public async connect(options?: Partial<ConnectionOptions>): Promise<boolean> {
