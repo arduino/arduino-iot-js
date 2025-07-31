@@ -163,6 +163,19 @@ ArduinoIoTCloud.connect(options)
   .catch(error => console.error(error));
 ```
 
+## Override MQTT Library
+
+If for any reason (e.g., a `React Native` project) the standard [mqtt library](https://github.com/mqttjs/MQTT.js) causes issues, it's possible to override it using `ArduinoIoTCloudFactory`.
+
+```ts
+import { ArduinoIoTCloudFactory, MqttConnect, ConnectionOptions } from 'arduino-iot-js';
+
+const connect = (url: string, options: ConnectionOptions) => // Put your library here (es. new Paho.MQTT.Client(options.host, Number(options.port)); )
+
+const ArduinoIoTCloud = ArduinoIoTCloudFactory(connect);
+
+```
+
 ## Development
 
 ### Testing
