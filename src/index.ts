@@ -20,18 +20,22 @@
 
 import 'whatwg-fetch';
 import mqtt from 'mqtt/dist/mqtt';
+
 import SenML from './senML';
-import { HttpClientFactory } from './http/HttpClientFactory';
 import { CloudClient } from './client/CloudClient';
+import { HttpClientFactory } from './http/HttpClientFactory';
+import { IMqttClient, MqttConnect } from './mqtt/IMqttClient';
 import { APIConnectionBuilder } from './builder/APIConnectionBuilder';
 import { TokenConnectionBuilder } from './builder/TokenConnectionBuilder';
 
-const builders = [
-  new TokenConnectionBuilder(mqtt.connect),
-  new APIConnectionBuilder(HttpClientFactory.Create(fetch), mqtt.connect),
-];
-const ArduinoIoTCloud = new CloudClient(builders);
+const ArduinoIoTCloudFactory = (mqttConnect: MqttConnect) =>
+  new CloudClient([
+    new TokenConnectionBuilder(mqttConnect),
+    new APIConnectionBuilder(HttpClientFactory.Create(fetch), mqttConnect),
+  ]);
 
-export { SenML };
-export { ArduinoIoTCloud };
+const ArduinoIoTCloud = ArduinoIoTCloudFactory(mqtt.connect);
+
+export { SenML, IMqttClient, MqttConnect };
+export { ArduinoIoTCloudFactory, ArduinoIoTCloud };
 export { CloudOptions, CloudMessageValue } from './client/ICloudClient';
