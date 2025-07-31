@@ -1,4 +1,4 @@
-import { MqttClient } from 'mqtt';
+import { MqttConnect } from '../mqtt/IMqttClient';
 import { IHttpClient } from '../http/IHttpClient';
 import { Connection } from '../connection/Connection';
 import { IConnection } from '../connection/IConnection';
@@ -16,7 +16,7 @@ function isApiOptions(options: CloudOptions): options is APIOptions {
 }
 
 export class APIConnectionBuilder implements IConnectionBuilder {
-  constructor(private client: IHttpClient, private mqttConnect: (string, IClientOptions) => MqttClient) {}
+  constructor(private client: IHttpClient, private mqttConnect: MqttConnect) {}
 
   public canBuild(options: CloudOptions): boolean {
     return isApiOptions(options);

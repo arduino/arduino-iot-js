@@ -1,11 +1,11 @@
-import { MqttClient } from 'mqtt';
+import { MqttConnect } from '../mqtt/IMqttClient';
 import { Connection } from '../connection/Connection';
 import { IConnection } from '../connection/IConnection';
 import { IConnectionBuilder } from './IConnectionBuilder';
 import { BrowserOptions, CloudOptions, BaseCloudOptions } from '../client/ICloudClient';
 
 export class TokenConnectionBuilder implements IConnectionBuilder {
-  constructor(private mqttConnect: (string, IClientOptions) => MqttClient) {}
+  constructor(private mqttConnect: MqttConnect) {}
 
   canBuild(options: CloudOptions): boolean {
     return !!(options as BrowserOptions).token;
