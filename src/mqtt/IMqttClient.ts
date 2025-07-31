@@ -4,6 +4,9 @@ export interface IMqttClient {
   on(event: 'error', cb: (error: Error) => void): IMqttClient;
   on(event: string, cb: Function): IMqttClient;
 
+  once(event: 'error', cb: (error: Error) => void): IMqttClient;
+  once(event: string, cb: Function): IMqttClient;
+
   publish(topic: string, message: string | Buffer, opts: object, callback?: Function): IMqttClient;
   publish(topic: string, message: string | Buffer, callback?: Function): IMqttClient;
 

@@ -1,21 +1,21 @@
-import mqtt from 'mqtt';
 import { Observable, Subject } from 'rxjs';
 
 import * as SenML from '../senML';
 import * as Utils from '../utils';
+import { IMqttClient } from '../mqtt/IMqttClient';
 import { CloudMessageValue } from '../client/ICloudClient';
 import { MqttConnection } from '../builder/ICloudClientBuilder';
 import { IConnection, CloudMessage, BaseConnectionOptions, ITokenConnection, ConnectionOptions } from './IConnection';
 export class Connection implements IConnection {
-  private _client: mqtt.MqttClient;
+  private _client: IMqttClient;
   protected options: ConnectionOptions;
   public messages: Observable<CloudMessage>;
 
-  protected get client(): mqtt.MqttClient {
+  protected get client(): IMqttClient {
     return this._client;
   }
 
-  protected set client(client: mqtt.MqttClient) {
+  protected set client(client: IMqttClient) {
     this._client = client;
     const messages = (this.messages = new Subject<CloudMessage>());
 
@@ -53,12 +53,12 @@ export class Connection implements IConnection {
     });
   }
 
-  public end(force?: boolean, opts?: Record<string, any>, cb?: mqtt.CloseCallback): IConnection {
+  public end(force?: boolean, opts?: Record<string, any>, cb?: Function): IConnection {
     this.client.end(force, opts, cb);
     return this;
   }
 
-  public reconnect(opts?: mqtt.IClientReconnectOptions): IConnection {
+  public reconnect(opts?: object): IConnection {
     this.client.reconnect(opts);
     return this;
   }
