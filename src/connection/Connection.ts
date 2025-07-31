@@ -1,8 +1,8 @@
-import mqtt from 'mqtt';
 import { Observable, Subject } from 'rxjs';
 
 import SenML from '../senML';
 import Utils from '../utils';
+import { IMqttClient, MqttConnect } from '../mqtt/IMqttClient';
 import { CloudMessageValue } from '../client/ICloudClient';
 import { IConnection, CloudMessage, ConnectionOptions } from './IConnection';
 
@@ -18,12 +18,12 @@ export class Connection implements IConnection {
   public token: string;
   public messages: Observable<CloudMessage>;
 
-  private _client: mqtt.MqttClient;
-  private get client(): mqtt.MqttClient {
+  private _client: IMqttClient;
+  private get client(): IMqttClient {
     return this._client;
   }
 
-  private set client(client: mqtt.MqttClient) {
+  private set client(client: IMqttClient) {
     this._client = client;
     const messages = (this.messages = new Subject<CloudMessage>());
 
@@ -37,7 +37,7 @@ export class Connection implements IConnection {
     host: string,
     port: string | number,
     token: string,
-    mqttConnect: (string, IClientOptions) => mqtt.MqttClient
+    mqttConnect: MqttConnect
   ): Promise<IConnection> {
     if (!token) throw new Error('connection failed: you need to provide a valid token');
     if (!host) throw new Error('connection failed: you need to provide a valid host (broker)');
@@ -62,11 +62,11 @@ export class Connection implements IConnection {
     this.client.on(event, cb);
     return this;
   }
-  public end(force?: boolean, opts?: Record<string, any>, cb?: mqtt.CloseCallback): IConnection {
+  public end(force?: boolean, opts?: Record<string, any>, cb?: Function): IConnection {
     this.client.end(force, opts, cb);
     return this;
   }
-  public reconnect(opts?: mqtt.IClientReconnectOptions): IConnection {
+  public reconnect(opts?: object): IConnection {
     this.client.reconnect(opts);
     return this;
   }
