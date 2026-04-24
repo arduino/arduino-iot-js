@@ -43,11 +43,10 @@ export class Connection implements IConnection {
     };
   }
 
-  public connect(options?: Partial<ConnectionOptions>): Promise<boolean> {
+  public async connect(options?: Partial<ConnectionOptions>): Promise<boolean> {
+    this.options = options ? { ...this.options, ...options } : this.options;
+    this.client = await this.mqttConnect(this.host, this.options);
     return new Promise<boolean>((res, rej) => {
-      this.options = options ? { ...this.options, ...options } : this.options;
-
-      this.client = this.mqttConnect(this.host, this.options);
       this.client.once('connect', () => res(true));
       this.client.once('close', () => rej(new Error('connection failed: client not connected')));
     });

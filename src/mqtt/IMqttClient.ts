@@ -17,4 +17,4 @@ export interface IMqttClient {
   reconnect(opts?: object): IMqttClient;
 }
 
-export type MqttConnect = (url: string, options: ConnectionOptions) => IMqttClient;
+export type MqttConnect = (url: string, options: ConnectionOptions) => IMqttClient | Promise<IMqttClient>;
