@@ -50,7 +50,7 @@ export class Connection implements IConnection {
     };
 
     const connection = new Connection();
-    connection.client = mqttConnect(`wss://${host}:${port}/mqtt`, {
+    connection.client = await mqttConnect(`wss://${host}:${port}/mqtt`, {
       ...BaseConnectionOptions,
       ...options,
     });
