@@ -1,5 +1,69 @@
 import { CloudMessageValue } from '../client/ICloudClient';
 
+// Polyfill btoa/atob for Node.js
+const globalBtoa = typeof btoa !== 'undefined' ? btoa : (str: string) => Buffer.from(str, 'binary').toString('base64');
+const globalAtob = typeof atob !== 'undefined' ? atob : (str: string) => Buffer.from(str, 'base64').toString('binary');
+
+// Universal helper to convert base64 to UTF-8 (no TextDecoder for RN compatibility)
+function base64ToUtf8(base64: string): string {
+  // Use atob as primary (works with RN polyfill)
+  const binaryStr = globalAtob(base64);
+
+  // Try to decode properly with TextDecoder if available
+  try {
+    if (typeof TextDecoder !== 'undefined') {
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+  } catch (e) {
+    // Fall through
+  }
+  // Fallback: return decoded binary string
+  return binaryStr;
+}
+
+// Universal helper to convert UTF-8 to base64 (no TextEncoder for RN compatibility)
+function utf8ToBase64(utf8: string): string {
+  // Use btoa as primary (works with RN polyfill)
+  // Convert UTF-8 string to binary without using deprecated unescape
+  const encoded = encodeURIComponent(utf8);
+  let binary = '';
+  for (let i = 0; i < encoded.length; i++) {
+    if (encoded[i] === '%') {
+      binary += String.fromCharCode(parseInt(encoded.slice(i + 1, i + 3), 16));
+      i += 2;
+    } else {
+      binary += encoded[i];
+    }
+  }
+  const base64 = globalBtoa(binary);
+
+  // Try to encode properly with TextEncoder if available for better accuracy
+  try {
+    if (typeof TextEncoder !== 'undefined') {
+      const bytes = new TextEncoder().encode(utf8);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return globalBtoa(binary);
+    }
+  } catch (e) {
+    // Fall through
+  }
+  // Fallback: return result from primary btoa approach
+  return base64;
+}
+
+// Universal fallback for Buffer.isBuffer
+function isBufferLike(obj: unknown): boolean {
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(obj)) return true;
+  return obj instanceof ArrayBuffer || obj instanceof Uint8Array;
+}
+
 class ArduinoCloudError extends Error {
   constructor(public code: number, message: string) {
     super(message);
@@ -45,7 +109,11 @@ function toArrayBuffer(buf: { length: number }): ArrayBuffer {
 }
 
 function toBuffer(ab: ArrayBuffer): Buffer {
-  const buffer = new Buffer(ab.byteLength);
+  // Node.js only - use Uint8Array in React Native
+  if (typeof Buffer === 'undefined') {
+    throw new Error('toBuffer() requires Node.js environment. Use Uint8Array instead.');
+  }
+  const buffer = Buffer.alloc(ab.byteLength);
   const view = new Uint8Array(ab);
   for (let i = 0; i < buffer.length; ++i) {
     buffer[i] = view[i];
@@ -60,7 +128,7 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
   for (let i = 0; i < len; i += 1) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return window.btoa(binary);
+  return globalBtoa(binary);
 }
 
 function isValidObject(obj: unknown): obj is object {
@@ -78,12 +146,12 @@ function safeJsonParse(obj: unknown): object {
 
 function headerFromJWS(signature: string): object {
   const encodedHeader = signature.split('.', 1)[0];
-  return safeJsonParse(Buffer.from(encodedHeader, 'base64').toString('binary'));
+  return safeJsonParse(base64ToUtf8(encodedHeader));
 }
 
 function toString(object: unknown): string {
   if (typeof object === 'string') return object;
-  if (typeof object === 'number' || Buffer.isBuffer(object)) return object.toString();
+  if (typeof object === 'number' || isBufferLike(object)) return object.toString();
   return JSON.stringify(object);
 }
 
@@ -94,7 +162,7 @@ function isValidJws(signature: string): boolean {
 
 function payloadFromJWS(signature: string): string {
   const [_, payload] = signature.split('.');
-  return Buffer.from(payload, 'base64').toString('utf8');
+  return base64ToUtf8(payload);
 }
 
 function decode(token: string): string | object {
@@ -123,4 +191,7 @@ export default {
   arrayBufferToBase64,
   isNotAnEmptyObject,
   decode,
+  base64ToUtf8,
+  utf8ToBase64,
+  isBufferLike,
 };

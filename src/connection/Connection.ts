@@ -47,6 +47,8 @@ export class Connection implements IConnection {
       clientId: `${userId}:${new Date().getTime()}`,
       username: userId,
       password: token,
+      host,
+      port: Number(port),
     };
 
     const connection = new Connection();
