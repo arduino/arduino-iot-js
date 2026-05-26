@@ -1,38 +1,48 @@
 name: Release Lib
 
-on: 
+on:
   push:
     tags:
       - '*'
 
 jobs:
-  test:
+  publish-package:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     env:
-      REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+      REPO_ACCESS_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Disable EOL conversions
         run: git config --global core.autocrlf false
 
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Integration tests
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: "18.x"
-          cache: "yarn"
-      
+          node-version: 24
+
       - run: yarn
       - run: yarn lint
       - run: yarn test
         env:
-            CLIENT_ID: ${{ secrets.CLIENT_ID }}
-            CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-      
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
       - run: yarn build
-      - run: npm publish
+      - name: Resolve npm dist-tag
+        id: dist_tag
+        run: |
+          REF="$GITHUB_REF_NAME"
+          PRE=$(echo "$REF" | sed -n 's/.*-\([a-zA-Z][a-zA-Z0-9]*\).*/\1/p')
+          echo "tag=${PRE:-latest}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish NPM Package
+        run: |
+          npm publish --provenance --access public --tag "${{ steps.dist_tag.outputs.tag }}"

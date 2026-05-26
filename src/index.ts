@@ -23,7 +23,9 @@ import mqtt from 'mqtt';
 
 import * as SenML from './senML';
 import { ArduinoIoTCloudFactory } from './ArduinoIoTCloud';
+import { ConnectionOptions } from './connection/IConnection';
 import { HttpClientFactory } from './http/HttpClientFactory';
+import { IMqttClient, MqttConnect } from './mqtt/IMqttClient';
 import { APIClientBuilder, APIOptions } from './builder/APIClientBuilder';
 import { TokenClientBuilder, BrowserOptions } from './builder/TokenClientBuilder';
 import { CredentialsClientBuilder, CredentialsOptions } from './builder/CredentialsClientBuilder';
@@ -44,6 +46,7 @@ const ArduinoIoTCloud = ArduinoIoTCloudFactory(builders);
 
 export { SenML };
 export { ArduinoIoTCloud };
+export { IMqttClient, MqttConnect, ConnectionOptions };
 export { CloudOptions } from './CloudOptions';
 export { CloudMessageValue } from './client/ICloudClient';
 export { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';
