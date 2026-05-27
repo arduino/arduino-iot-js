@@ -22,15 +22,18 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Integration tests
         uses: actions/setup-node@v3
         with:
           node-version: "18.x"
-          cache: "yarn"
+          cache: "pnpm"
 
-      - run: yarn
-      - run: yarn lint
-      - run: yarn test
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
