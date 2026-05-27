@@ -47,18 +47,20 @@
     "rollup-plugin-sizes": "^1.0.2",
     "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-typescript2": "^0.27.1",
+    "tslib": "^2.8.1",
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "test": "npm run build && jest --config ./jest.config.js",
+    "test": "pnpm run build && jest --config ./jest.config.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "clean": "rimraf lib es",
     "build:es": "rollup -c",
     "build:lib": "rollup -c ./rollup.config.lib.js",
-    "build": "npm run clean && npm run build:es && npm run build:lib",
+    "build": "pnpm run clean && pnpm run build:es && pnpm run build:lib",
     "dev": "rollup -c -w"
   },
+  "packageManager": "pnpm@10.22.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arduino/arduino-iot-js.git"

@@ -24,18 +24,22 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: "pnpm"
 
-      - run: yarn
-      - run: yarn lint
-      - run: yarn test
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-      - run: yarn build
+      - run: pnpm build
       - name: Resolve npm dist-tag
         id: dist_tag
         run: |

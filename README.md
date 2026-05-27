@@ -31,10 +31,10 @@ Via NPM
 $ npm install arduino-iot-js
 ```
 
-Via Yarn
+Via pnpm
 
 ```bash
-$ yarn add arduino-iot-js
+$ pnpm add arduino-iot-js
 ```
 
 ## How to use
