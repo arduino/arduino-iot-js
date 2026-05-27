@@ -18,23 +18,14 @@
  *
  */
 
-import 'whatwg-fetch';
 import mqtt from 'mqtt';
 
 import * as SenML from './senML';
 import { ArduinoIoTCloudFactory } from './ArduinoIoTCloud';
-import { ConnectionOptions } from './connection/IConnection';
 import { HttpClientFactory } from './http/HttpClientFactory';
-import { IMqttClient, MqttConnect } from './mqtt/IMqttClient';
-import { APIClientBuilder, APIOptions } from './builder/APIClientBuilder';
-import { TokenClientBuilder, BrowserOptions } from './builder/TokenClientBuilder';
-import { CredentialsClientBuilder, CredentialsOptions } from './builder/CredentialsClientBuilder';
-import {
-  ICloudClient,
-  IMultiPropertiesCloudClient,
-  ITokenCloudClient,
-  ISinglePropertyCloudClient,
-} from './client/ICloudClient';
+import { APIClientBuilder } from './builder/APIClientBuilder';
+import { TokenClientBuilder } from './builder/TokenClientBuilder';
+import { CredentialsClientBuilder } from './builder/CredentialsClientBuilder';
 
 const builders = [
   new TokenClientBuilder(mqtt.connect),
@@ -46,9 +37,17 @@ const ArduinoIoTCloud = ArduinoIoTCloudFactory(builders);
 
 export { SenML };
 export { ArduinoIoTCloud };
-export { IMqttClient, MqttConnect, ConnectionOptions };
 export { CloudOptions } from './CloudOptions';
-export { CloudMessageValue } from './client/ICloudClient';
-export { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';
-export { APIOptions, BrowserOptions, CredentialsOptions };
-export { ICloudClient, IMultiPropertiesCloudClient, ITokenCloudClient, ISinglePropertyCloudClient };
+export type { ConnectionOptions } from './connection/IConnection';
+export type { IMqttClient, MqttConnect } from './mqtt/IMqttClient';
+export type { APIOptions } from './builder/APIClientBuilder';
+export type { BrowserOptions } from './builder/TokenClientBuilder';
+export type { CredentialsOptions } from './builder/CredentialsClientBuilder';
+export type { CloudMessageValue } from './client/ICloudClient';
+export type { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';
+export type {
+  ICloudClient,
+  IMultiPropertiesCloudClient,
+  ITokenCloudClient,
+  ISinglePropertyCloudClient,
+} from './client/ICloudClient';
