@@ -18,9 +18,6 @@ importers:
         specifier: ^6.5.5
         version: 6.6.6
     devDependencies:
-      '@types/mqtt':
-        specifier: ^2.5.0
-        version: 2.5.0
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.41
@@ -42,9 +39,6 @@ importers:
       prettier:
         specifier: ^2.0.5
         version: 2.2.1
-      tslib:
-        specifier: ^2.8.1
-        version: 2.8.1
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -356,10 +350,6 @@ packages:
 
   '@types/json-schema@7.0.7':
     resolution: {integrity: sha512-cxWFQVseBm6O9Gbw1IWb8r6OS4OhSt3hPZLkFApLjM8TEXROBuQGLAH2i2gZpcXdLBIrpXuTDhH7Vbm1iXmNGA==}
-
-  '@types/mqtt@2.5.0':
-    resolution: {integrity: sha512-n+0/ErBin30j+UbhcHGK/STjHjh65k85WNR6NlUjRG0g9yctpF12pS+SOkwz0wmp+7momAo9Cyi4Wmvy8UsCQg==}
-    deprecated: This is a stub types definition for MQTT (https://github.com/mqttjs/MQTT.js). MQTT provides its own type definitions, so you don't need @types/mqtt installed!
 
   '@types/node@20.19.41':
     resolution: {integrity: sha512-ECymXOukMnOoVkC2bb1Vc/w/836DXncOg5m8Xj1RH7xSHZJWNYY6Zh7EH477vcnD5egKNNfy2RpNOmuChhFPgQ==}
@@ -1943,14 +1933,6 @@ snapshots:
 
   '@types/json-schema@7.0.7': {}
 
-  '@types/mqtt@2.5.0':
-    dependencies:
-      mqtt: 4.3.8
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@types/node@20.19.41':
     dependencies:
       undici-types: 6.21.0
@@ -3175,7 +3157,8 @@ snapshots:
 
   tslib@1.14.1: {}
 
-  tslib@2.8.1: {}
+  tslib@2.8.1:
+    optional: true
 
   tsutils@3.21.0(typescript@6.0.3):
     dependencies:
