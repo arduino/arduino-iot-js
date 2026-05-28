@@ -1,4 +1,3 @@
-import path from 'path';
 import { defineConfig } from 'vitest/config';
 import dts from 'unplugin-dts/vite';
 
@@ -11,7 +10,7 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: './src/index.ts',
       formats: ['es', 'cjs'],
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
