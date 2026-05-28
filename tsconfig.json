@@ -1,18 +1,16 @@
 {
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "lib": ["es2019", "dom"],
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationDir": "./dist",
+    "declaration": false,
     "target": "es2019",
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   }
 }
