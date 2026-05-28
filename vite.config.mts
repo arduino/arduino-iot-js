@@ -15,13 +15,18 @@ export default defineConfig({
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
     rolldownOptions: {
-      output: {  
-        preserveModules: true,  
-        preserveModulesRoot: "src",  
-        entryFileNames: "[name].js"  
-      },  
+      output: {
+        preserveModules: true,
+        preserveModulesRoot: 'src',
+        entryFileNames: '[name].js',
+      },
       treeshake: true,
-      external: Object.keys(pkg.dependencies),
+      external: (id) => {
+        // Build regex pattern for all dependencies and their subexport
+        const deps = Object.keys(pkg.dependencies).map((d) => d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const pattern = new RegExp(`^(${deps.join('|')})(/|$)`);
+        return pattern.test(id);
+      },
     },
   },
   plugins: [
