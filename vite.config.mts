@@ -21,10 +21,7 @@ export default defineConfig({
         entryFileNames: "[name].js"  
       },  
       treeshake: true,
-      external: [
-        ...Object.keys(pkg.dependencies),
-        /^node:.*/,
-      ],
+      external: Object.keys(pkg.dependencies),
     },
   },
   plugins: [
