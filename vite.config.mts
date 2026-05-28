@@ -1,10 +1,10 @@
 import path from 'path';
-import type { UserConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import dts from 'unplugin-dts/vite';
 
 import pkg from './package.json';
 
-const config: UserConfig = {
+export default defineConfig({
   build: {
     target: 'es2019',
     outDir: 'dist',
@@ -15,7 +15,13 @@ const config: UserConfig = {
       formats: ['es', 'cjs'],
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
-    rollupOptions: {
+    rolldownOptions: {
+      output: {  
+        preserveModules: true,  
+        preserveModulesRoot: "src",  
+        entryFileNames: "[name].js"  
+      },  
+      treeshake: true,
       external: [
         ...Object.keys(pkg.dependencies),
         /^node:.*/,
@@ -33,6 +39,4 @@ const config: UserConfig = {
     globals: false,
     include: ['test/**/*.test.{ts,js}'],
   },
-};
-
-export default config;
+});
