@@ -32,7 +32,6 @@
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
     "prettier": "^2.0.5",
-    "rimraf": "^3.0.2",
     "tslib": "^2.8.1",
     "typescript": "^6.0.0",
     "unplugin-dts": "^1.0.0",
@@ -44,8 +43,8 @@
     "test:watch": "vitest",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "clean": "rimraf dist",
-    "build": "pnpm run clean && vite build",
+    "clean": "rm -rf node_modules dist",
+    "build": "vite build",
     "dev": "vite build --watch"
   },
   "packageManager": "pnpm@10.22.0",
