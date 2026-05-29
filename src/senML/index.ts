@@ -1,7 +1,8 @@
-import BaseCBOR, { SenML } from '@arduino/cbor-js';
+import BaseCBOR from '@arduino/cbor-js';
 
 import * as Utils from '../utils';
 import { CloudMessageValue } from '../client/ICloudClient';
+import { SenML } from '../types/senML';
 
 export const CBOR = BaseCBOR;
 

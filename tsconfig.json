@@ -1,17 +1,16 @@
 {
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "lib": ["es5", "dom", "es6"],
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationDir": "./dist",
-    "target": "es5",
+    "lib": ["es2019", "dom"],
+    "declaration": false,
+    "target": "es2019",
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "module": "ES2015",
-    "moduleResolution": "node",
-    "types": ["node", "jest"]
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": ["node", "vite/client"]
   }
 }
