@@ -1,4 +1,4 @@
-import { CloudMessageValue } from '../client/ICloudClient';
+import { CloudMessageValue } from '../transport/types';
 
 // Polyfill btoa/atob for Node.js
 const globalBtoa = typeof btoa !== 'undefined' ? btoa : (str: string) => Buffer.from(str, 'binary').toString('base64');
