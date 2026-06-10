@@ -18,36 +18,22 @@
  *
  */
 
-import mqtt from 'mqtt';
-
 import * as SenML from './senML';
-import { ArduinoIoTCloudFactory } from './ArduinoIoTCloud';
-import { HttpClientFactory } from './http/HttpClientFactory';
-import { APIClientBuilder } from './builder/APIClientBuilder';
-import { TokenClientBuilder } from './builder/TokenClientBuilder';
-import { CredentialsClientBuilder } from './builder/CredentialsClientBuilder';
+import { createArduinoCloud } from './connect';
 
-const builders = [
-  new TokenClientBuilder(mqtt.connect),
-  new CredentialsClientBuilder(mqtt.connect),
-  new APIClientBuilder(HttpClientFactory.Create(fetch), mqtt.connect),
-];
-
-const ArduinoIoTCloud = ArduinoIoTCloudFactory(builders);
+/** Default entry point. Use `createArduinoCloud({ mqttConnect })` to override deps. */
+const ArduinoIoTCloud = createArduinoCloud();
 
 export { SenML };
-export { ArduinoIoTCloud };
-export { CloudOptions } from './CloudOptions';
-export type { ConnectionOptions } from './connection/IConnection';
-export type { IMqttClient, MqttConnect } from './mqtt/IMqttClient';
-export type { APIOptions } from './builder/APIClientBuilder';
-export type { BrowserOptions } from './builder/TokenClientBuilder';
-export type { CredentialsOptions } from './builder/CredentialsClientBuilder';
-export type { CloudMessageValue } from './client/ICloudClient';
-export type { IArduinoIoTCloudFactory } from './builder/IArduinoIoTCloudFactory';
-export type {
-  ICloudClient,
-  IMultiPropertiesCloudClient,
-  ITokenCloudClient,
-  ISinglePropertyCloudClient,
-} from './client/ICloudClient';
+export { ArduinoIoTCloud, createArduinoCloud };
+
+export type { ArduinoCloudDeps } from './connect';
+export type { CloudOptions, ConnectOptions, TokenOptions, APIOptions, CredentialsOptions } from './options';
+export type { MqttConnectFn } from './transport/MqttTransport';
+export type { CloudMessage, CloudMessageValue, MqttOptions } from './transport/types';
+export type { MqttClient } from './mqtt/MqttClient';
+export type { ActiveConnection } from './connection/ActiveConnection';
+export type { UserConnection } from './connection/UserConnection';
+export type { DeviceConnection } from './connection/DeviceConnection';
+export type { Property, PropertyListener } from './connection/Property';
+export type { Subscription } from './connection/Subscription';
