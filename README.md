@@ -43,7 +43,19 @@ The MQTT connection relies on Username / Password authentication.
 
 Under the hood, this module could uses your user ID (plus a timestamp) as _Username_ and a valid JWT Token as _Password_ when needs to connect to every properties (You can use either a valid JWT token or just your API Credentials) or some device credentials.
 
+`connect()` returns an **active connection** object that encapsulates the live
+session. From it you obtain a `property(...)` handle, which you can `subscribe`
+to and `publish` to. `subscribe` returns a subscription you can later
+`unsubscribe`, and `connection.close()` tears down the whole session.
+
+> **Migrating from `0.x`?** The old `client.sendProperty()` /
+> `client.onPropertyValue()` / `client.disconnect()` API has been replaced by
+> the connection-first API shown below.
+
 ### How to connect via **User Credentials**
+
+A user can address any thing they own, so `connection.property(thingId, name)`
+takes an explicit thing id.
 
 - via **API Credentials**
 
@@ -51,18 +63,23 @@ Under the hood, this module could uses your user ID (plus a timestamp) as _Usern
 import { ArduinoIoTCloud } from 'arduino-iot-js';
 
 (async () => {
-  const client = await ArduinoIoTCloud.connect({
+  const connection = await ArduinoIoTCloud.connect({
     clientId: 'YOUR_CLIENT_ID',
     clientSecret: 'YOUR_CLIENT_SECRET',
     onDisconnect: (message) => console.error(message),
   });
 
+  const property = connection.property('YOUR_THING_ID', 'YOUR_VARIABLE_NAME');
+
   // Send a value to a thing property
-  const value = 'some value';
-  client.sendProperty('YOUR_THING_ID', 'YOUR_VARIABLE_NAME', value);
+  await property.publish('some value');
 
   // Listen to a thing property's changes
-  client.onPropertyValue('YOUR_THING_ID', 'ANOTHER_VARIABLE_NAME', (value) => console.log(value));
+  const subscription = property.subscribe((value) => console.log(value));
+
+  // Later, stop listening / tear down the connection
+  subscription.unsubscribe();
+  await connection.close();
 })();
 ```
 
@@ -78,50 +95,53 @@ async function retrieveUserToken() {
 (async () => {
   const token = await retrieveUserToken();
 
-  const client = await ArduinoIoTCloud.connect({
+  const connection = await ArduinoIoTCloud.connect({
     token,
     onDisconnect: (message) => console.error(message),
   });
 
-  // Send a value to a thing property
-  const value = 'some value';
-  client.sendProperty('YOUR_THING_ID', 'YOUR_VARIABLE_NAME', value);
+  const property = connection.property('YOUR_THING_ID', 'YOUR_VARIABLE_NAME');
 
-  // Listen to a thing property's changes
-  client.onPropertyValue('YOUR_THING_ID', 'ANOTHER_VARIABLE_NAME', (value) => console.log(value));
+  await property.publish('some value');
+  property.subscribe((value) => console.log(value));
 })();
 ```
 
 ### How to connect via **Device Credentials**
 
+A device is bound to a single thing (resolved automatically at connect time), so
+`connection.property(name)` takes only the variable name.
+
 ```typescript
 import { ArduinoIoTCloud } from 'arduino-iot-js';
 
 (async () => {
-  const client = await ArduinoIoTCloud.connect({
+  const connection = await ArduinoIoTCloud.connect({
     deviceId: 'YOUR_DEVICE_ID',
     secretKey: 'YOUR_SECRET_KEY',
     onDisconnect: (message) => console.error(message),
   });
 
+  const property = connection.property('YOUR_VARIABLE_NAME');
+
   // Send property's values as a device
-  const value = 'some value';
-  client.sendProperty('YOUR_VARIABLE_NAME', value);
+  await property.publish('some value');
 
   // Listen property's updates
-  client.onPropertyValue('ANOTHER_VARIABLE_NAME', (value) => console.log(value));
+  property.subscribe((value) => console.log(value));
 })();
 ```
 
 ## Override MQTT Library
 
-If for any reason (e.g., a `React Native` project) the standard [mqtt library](https://github.com/mqttjs/MQTT.js) causes issues, it's possible to override it using `ArduinoIoTCloudFactory`.
+If for any reason (e.g., a `React Native` project) the standard [mqtt library](https://github.com/mqttjs/MQTT.js) causes issues, it's possible to override it using `createArduinoCloud`.
 
 ```ts
-import { ArduinoIoTCloudFactory, MqttConnect, ConnectionOptions } from 'arduino-iot-js';
+import { createArduinoCloud, MqttClient, MqttOptions } from 'arduino-iot-js';
 
-const connect = (url: string, options: ConnectionOptions) => // Put your library here (es. new Paho.MQTT.Client(options.host, Number(options.port)); )
+const mqttConnect = (url: string, options: MqttOptions): MqttClient => {
+  // Put your library here (e.g. new Paho.MQTT.Client(options.host, Number(options.port));)
+};
 
-const ArduinoIoTCloud = ArduinoIoTCloudFactory(connect);
-
+const ArduinoIoTCloud = createArduinoCloud({ mqttConnect });
 ```
