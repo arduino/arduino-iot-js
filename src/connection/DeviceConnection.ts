@@ -17,7 +17,11 @@ const THING_RESOLUTION_TIMEOUT = 10000;
 export class DeviceConnection extends ActiveConnection {
   private thingId?: string;
 
-  private constructor(transport: MqttTransport, options: CloudOptions, private readonly deviceId: string) {
+  private constructor(
+    transport: MqttTransport,
+    options: CloudOptions,
+    private readonly deviceId: string
+  ) {
     super(transport, options);
   }
 
@@ -41,18 +45,30 @@ export class DeviceConnection extends ActiveConnection {
 
   private resolveThing(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const subscription = this.observe<string>(`/a/d/${this.deviceId}/e/i`, () => true, (thingId) => {
-        if (!thingId) return;
-        clearTimeout(timer);
-        subscription.unsubscribe();
-        this.thingId = thingId;
-        resolve();
-      });
+      // The timeout and the listener each need to tear the other down, so the
+      // shared cleanup is captured in a closure assigned once both exist.
+      let cleanup = (): void => undefined;
+
+      const subscription = this.observe<string>(
+        `/a/d/${this.deviceId}/e/i`,
+        () => true,
+        (thingId) => {
+          if (!thingId) return;
+          cleanup();
+          this.thingId = thingId;
+          resolve();
+        }
+      );
 
       const timer = setTimeout(() => {
-        subscription.unsubscribe();
+        cleanup();
         reject(new Error('connection failed: no thing associated with this device'));
       }, THING_RESOLUTION_TIMEOUT);
+
+      cleanup = () => {
+        clearTimeout(timer);
+        subscription.unsubscribe();
+      };
     });
   }
 }

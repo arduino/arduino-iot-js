@@ -10,7 +10,7 @@ export type CloudOptions = {
   ssl?: boolean;
   onOffline?: () => void;
   onConnected?: () => void;
-  onDisconnect?: (message?: any) => void;
+  onDisconnect?: (message?: unknown) => void;
 };
 
 /** Connect as a user with a pre-obtained JWT. */

@@ -20,7 +20,10 @@ export interface PropertyChannel {
  * channel it speaks through, so creating one is cheap and side-effect free.
  */
 export class Property {
-  constructor(private readonly name: string, private readonly channel: PropertyChannel) {}
+  constructor(
+    private readonly name: string,
+    private readonly channel: PropertyChannel
+  ) {}
 
   public subscribe<T extends CloudMessageValue>(listener: PropertyListener<T>): Subscription {
     if (typeof listener !== 'function') throw new Error('subscribe failed: listener must be a function');

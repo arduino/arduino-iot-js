@@ -5,14 +5,7 @@ import { MqttOptions } from './transport/types';
 import { MqttConnectFn, MqttTransport } from './transport/MqttTransport';
 import { UserConnection } from './connection/UserConnection';
 import { DeviceConnection } from './connection/DeviceConnection';
-import {
-  APIOptions,
-  CloudOptions,
-  ConnectOptions,
-  CredentialsOptions,
-  DEFAULTS,
-  TokenOptions,
-} from './options';
+import { APIOptions, CloudOptions, ConnectOptions, CredentialsOptions, DEFAULTS, TokenOptions } from './options';
 
 const DEFAULT_AUDIENCE = 'https://api2.arduino.cc/iot';
 const DEFAULT_TOKEN_URL = 'https://api2.arduino.cc/iot/v1/clients/token';
@@ -62,7 +55,8 @@ export function createArduinoCloud(deps: ArduinoCloudDeps = {}) {
 
   async function connectUser(token: string, opts: CloudOptions): Promise<UserConnection> {
     const url = `wss://wss.${opts.host}:${opts.port || 8443}/mqtt`;
-    const username = Utils.decode(token)['http://arduino.cc/id'];
+    const payload = Utils.decode(token) as { 'http://arduino.cc/id': string };
+    const username = payload['http://arduino.cc/id'];
     const transport = new MqttTransport(url, credentials(username, token), mqttConnect);
     await transport.connect();
     return new UserConnection(transport, opts, token);
@@ -82,7 +76,7 @@ export function createArduinoCloud(deps: ArduinoCloudDeps = {}) {
     });
 
     if (!response.ok) throw new Error(`connect failed: token exchange returned ${response.status}`);
-    const { access_token: accessToken }: AccessTokenResponse = await response.json();
+    const { access_token: accessToken } = (await response.json()) as AccessTokenResponse;
     return accessToken;
   }
 

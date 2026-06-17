@@ -20,14 +20,17 @@ export abstract class ActiveConnection {
   // subscription is created on the first listener and dropped with the last.
   private readonly topicRefs = new Map<string, number>();
 
-  constructor(protected readonly transport: MqttTransport, protected readonly options: CloudOptions) {
+  constructor(
+    protected readonly transport: MqttTransport,
+    protected readonly options: CloudOptions
+  ) {
     if (this.options.onConnected) this.transport.on('connect', this.options.onConnected);
     if (this.options.onDisconnect) this.transport.on('close', this.options.onDisconnect);
     if (this.options.onOffline) this.transport.on('offline', this.options.onOffline);
   }
 
   /** Close the underlying connection. The instance must not be reused after. */
-  public async close(): Promise<void> {
+  public close(): void {
     this.transport.end(true);
   }
 
@@ -71,7 +74,7 @@ export abstract class ActiveConnection {
     };
   }
 
-  protected async send(
+  protected send(
     topic: string,
     name: string,
     value: CloudMessageValue,
@@ -80,9 +83,10 @@ export abstract class ActiveConnection {
     if (timestamp && !Number.isInteger(timestamp)) throw new Error('send failed: timestamp must be an Integer');
     if (!Utils.isString(name)) throw new Error('send failed: name must be a valid string');
 
-    const values = SenML.parse(name, value, timestamp, this.options.useCloudProtocolV2, null);
+    const values = SenML.parse(name, value, timestamp, this.options.useCloudProtocolV2 ?? false, null);
     const message = SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2);
     this.transport.publish(topic, Utils.toBuffer(message));
+    return Promise.resolve();
   }
 
   private retainTopic(topic: string): void {

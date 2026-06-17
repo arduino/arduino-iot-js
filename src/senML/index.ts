@@ -94,7 +94,7 @@ export function toCloudProtocolV2(cborValue: SenML): SenML {
   return cloudV2CBORValue;
 }
 
-export function format(value: CloudMessageValue, name: string, timestamp: number, deviceId: string): SenML {
+export function format(value: CloudMessageValue, name: string, timestamp: number, deviceId: string | null): SenML {
   const parsed: SenML = {};
   if (timestamp !== -1) parsed.bt = timestamp || new Date().getTime();
   parsed.n = name;
@@ -115,14 +115,14 @@ export function parse(
   value: CloudMessageValue,
   timestamp: number,
   useCloudProtocolV2: boolean,
-  deviceId: string
+  deviceId: string | null
 ): SenML | SenML[] {
   if (timestamp && !Number.isInteger(timestamp)) throw new Error('Timestamp must be Integer');
   if (name === undefined || typeof name !== 'string') throw new Error('Name must be a valid string');
 
   if (Utils.isObject(value))
     return Object.keys(value)
-      .map((key, i) => format(value[key], `${name}:${key}`, i === 0 ? timestamp : -1, i === 0 ? deviceId : undefined))
+      .map((key, i) => format(value[key], `${name}:${key}`, i === 0 ? timestamp : -1, i === 0 ? deviceId : null))
       .map((cborValue) => (useCloudProtocolV2 ? toCloudProtocolV2(cborValue) : cborValue));
 
   let cborValue = format(value, name, timestamp, deviceId);

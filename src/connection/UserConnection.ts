@@ -12,7 +12,11 @@ import { Property } from './Property';
  * user writes — the mirror image of {@link DeviceConnection}.
  */
 export class UserConnection extends ActiveConnection {
-  constructor(transport: MqttTransport, options: CloudOptions, private token: string) {
+  constructor(
+    transport: MqttTransport,
+    options: CloudOptions,
+    private token: string
+  ) {
     super(transport, options);
   }
 

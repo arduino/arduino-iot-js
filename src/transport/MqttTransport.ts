@@ -2,7 +2,7 @@ import { Observable, Subject } from 'rxjs';
 
 import * as SenML from '../senML';
 import * as Utils from '../utils';
-import { MqttClient } from '../mqtt/MqttClient';
+import { MqttCallback, MqttClient } from '../mqtt/MqttClient';
 import { BaseConnectionOptions, CloudMessage, CloudMessageValue, MqttOptions } from './types';
 
 export type MqttConnectFn = (url: string, options: MqttOptions) => MqttClient | Promise<MqttClient>;
@@ -19,7 +19,11 @@ export class MqttTransport {
   /** Decoded messages for every subscribed topic. Survives reconnects. */
   public readonly messages: Observable<CloudMessage> = this.messagesSubject;
 
-  constructor(private readonly url: string, private options: MqttOptions, private readonly mqttConnect: MqttConnectFn) {
+  constructor(
+    private readonly url: string,
+    private options: MqttOptions,
+    private readonly mqttConnect: MqttConnectFn
+  ) {
     this.options = { ...BaseConnectionOptions, ...options };
   }
 
@@ -35,7 +39,7 @@ export class MqttTransport {
     });
   }
 
-  public on(event: string, cb: (...args: any[]) => void): void {
+  public on(event: string, cb: MqttCallback): void {
     this.client.on(event, cb);
   }
 
@@ -43,11 +47,11 @@ export class MqttTransport {
     this.client.publish(topic, message, { qos: 1, retain: false });
   }
 
-  public subscribe(topic: string, callback?: Function): void {
+  public subscribe(topic: string, callback?: MqttCallback): void {
     this.client.subscribe(topic, callback);
   }
 
-  public unsubscribe(topic: string, callback?: Function): void {
+  public unsubscribe(topic: string, callback?: MqttCallback): void {
     this.client.unsubscribe(topic, undefined, callback);
   }
 

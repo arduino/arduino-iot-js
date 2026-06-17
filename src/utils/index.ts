@@ -18,7 +18,7 @@ export function base64ToUtf8(base64: string): string {
       }
       return new TextDecoder().decode(bytes);
     }
-  } catch (e) {
+  } catch {
     // Fall through
   }
   // Fallback: return decoded binary string
@@ -51,7 +51,7 @@ export function utf8ToBase64(utf8: string): string {
       }
       return globalBtoa(binary);
     }
-  } catch (e) {
+  } catch {
     // Fall through
   }
   // Fallback: return result from primary btoa approach
@@ -65,13 +65,18 @@ export function isBufferLike(obj: unknown): boolean {
 }
 
 export class ArduinoCloudError extends Error {
-  constructor(public code: number, message: string) {
+  constructor(
+    public code: number,
+    message: string
+  ) {
     super(message);
     this.name = this.constructor.name;
 
     try {
       Error.captureStackTrace(this, this.constructor);
-    } catch (error) {}
+    } catch {
+      // Fall through
+    }
   }
 }
 
@@ -99,11 +104,11 @@ export function isArray<T>(value: CloudMessageValue): value is T[] {
   return !isNil(value) && Array.isArray(value);
 }
 
-export function isNotAnEmptyObject(value: any): boolean {
+export function isNotAnEmptyObject(value: unknown): boolean {
   return !(value && typeof value === 'object' && Object.keys(value).length == 0);
 }
 
-export function toArrayBuffer(buf: { length: number }): ArrayBuffer {
+export function toArrayBuffer(buf: ArrayLike<number>): ArrayBuffer {
   const ab = new ArrayBuffer(buf.length);
   const view = new Uint8Array(ab);
   for (let i = 0; i < buf.length; ++i) {
@@ -136,30 +141,30 @@ export function arrayBufferToBase64(buf: ArrayBuffer): string {
 }
 
 export interface Newable<T> {
-  new (...args: any[]): T;
+  new (...args: unknown[]): T;
 }
 
 export function isValidObject(obj: unknown): obj is object {
   return Object.prototype.toString.call(obj) === '[object Object]';
 }
 
-export function safeJsonParse(obj: unknown): object {
+export function safeJsonParse(obj: unknown): object | undefined {
   if (isValidObject(obj)) return obj;
   try {
-    return JSON.parse(obj as string);
-  } catch (e) {
+    return JSON.parse(obj as string) as object;
+  } catch {
     return undefined;
   }
 }
 
-export function headerFromJWS(signature: string): object {
+export function headerFromJWS(signature: string): object | undefined {
   const encodedHeader = signature.split('.', 1)[0];
   return safeJsonParse(base64ToUtf8(encodedHeader));
 }
 
 export function toString(object: unknown): string {
   if (typeof object === 'string') return object;
-  if (typeof object === 'number' || isBufferLike(object)) return object.toString();
+  if (typeof object === 'number' || isBufferLike(object)) return String(object);
   return JSON.stringify(object);
 }
 
@@ -169,20 +174,20 @@ export function isValidJws(signature: string): boolean {
 }
 
 export function payloadFromJWS(signature: string): string {
-  const [_, payload] = signature.split('.');
+  const payload = signature.split('.')[1];
   return base64ToUtf8(payload);
 }
 
-export function decode(token: string): string | object {
+export function decode(token: string): string | object | null {
   token = toString(token);
 
   if (!isValidJws(token)) return null;
 
-  const header = headerFromJWS(token);
+  const header = headerFromJWS(token) as { typ?: unknown } | undefined;
   if (!header) return null;
 
-  let payload = payloadFromJWS(token);
-  if (header['typ'] === 'JWT') payload = JSON.parse(payload);
+  let payload: string | object = payloadFromJWS(token);
+  if (header.typ === 'JWT') payload = JSON.parse(payload) as object;
 
   return payload;
 }

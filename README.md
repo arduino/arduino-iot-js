@@ -79,7 +79,7 @@ import { ArduinoIoTCloud } from 'arduino-iot-js';
 
   // Later, stop listening / tear down the connection
   subscription.unsubscribe();
-  await connection.close();
+  connection.close();
 })();
 ```
 
