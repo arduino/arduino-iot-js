@@ -1,5 +1,3 @@
-import mqtt from 'mqtt';
-
 import * as Utils from './utils';
 import { MqttOptions } from './transport/types';
 import { MqttConnectFn, MqttTransport } from './transport/MqttTransport';
@@ -12,9 +10,10 @@ const DEFAULT_TOKEN_URL = 'https://api2.arduino.cc/iot/v1/clients/token';
 
 type FetchFn = typeof fetch;
 
-/** Pluggable dependencies, e.g. a custom MQTT client for React Native. */
+/** Injected dependencies. `mqttConnect` is required so the library stays
+ * transport-agnostic and never bundles `mqtt` (important for React Native). */
 export type ArduinoCloudDeps = {
-  mqttConnect?: MqttConnectFn;
+  mqttConnect: MqttConnectFn;
   fetch?: FetchFn;
 };
 
@@ -26,12 +25,12 @@ const isToken = (o: ConnectOptions): o is TokenOptions & CloudOptions => !!(o as
 const isAPI = (o: ConnectOptions): o is APIOptions & CloudOptions => !!(o as APIOptions).clientId;
 
 /**
- * Build an entry point bound to a set of dependencies. The default
- * `ArduinoIoTCloud` export is `createArduinoCloud()`; pass `{ mqttConnect }` (or
- * `{ fetch }`) to swap the underlying implementations.
+ * Build an entry point bound to a set of dependencies. The MQTT client is
+ * injected via `mqttConnect` (e.g. `mqtt`'s `connect` on Node/web, or a custom
+ * client on React Native) so the library never imports `mqtt` itself.
  */
-export function createArduinoCloud(deps: ArduinoCloudDeps = {}) {
-  const mqttConnect = deps.mqttConnect ?? (mqtt.connect as unknown as MqttConnectFn);
+export function createArduinoCloud(deps: ArduinoCloudDeps) {
+  const mqttConnect = deps.mqttConnect;
   const doFetch = deps.fetch ?? fetch;
 
   function connect(options: CredentialsOptions & CloudOptions): Promise<DeviceConnection>;

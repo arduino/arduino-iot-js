@@ -37,6 +37,13 @@ Via pnpm
 $ pnpm add arduino-iot-js
 ```
 
+On Node.js or the browser you'll also want the [`mqtt`](https://github.com/mqttjs/MQTT.js)
+library, which is an optional peer dependency (see [Providing the MQTT client](#providing-the-mqtt-client)):
+
+```bash
+$ npm install mqtt
+```
+
 ## How to use
 
 The MQTT connection relies on Username / Password authentication.
@@ -52,6 +59,39 @@ to and `publish` to. `subscribe` returns a subscription you can later
 > `client.onPropertyValue()` / `client.disconnect()` API has been replaced by
 > the connection-first API shown below.
 
+### Providing the MQTT client
+
+This library is **transport-agnostic**: it never imports `mqtt` itself, so nothing
+pulls it into your bundle (important for `React Native`). You build an entry point
+with `createArduinoCloud({ mqttConnect })`, injecting the MQTT client factory.
+
+On Node or the browser, install [`mqtt`](https://github.com/mqttjs/MQTT.js) (it's an
+optional peer dependency) and pass its `connect`:
+
+```ts
+import { connect } from 'mqtt';
+import { createArduinoCloud, type MqttConnectFn } from 'arduino-iot-js';
+
+const ArduinoIoTCloud = createArduinoCloud({
+  mqttConnect: connect as unknown as MqttConnectFn,
+});
+```
+
+On `React Native` (or anywhere the standard library doesn't work), provide your own
+client implementing the `MqttClient` contract instead — without ever installing `mqtt`:
+
+```ts
+import { createArduinoCloud, MqttClient, MqttOptions } from 'arduino-iot-js';
+
+const ArduinoIoTCloud = createArduinoCloud({
+  mqttConnect: (url: string, options: MqttOptions): MqttClient => {
+    // Put your library here (e.g. new Paho.MQTT.Client(options.host, Number(options.port)))
+  },
+});
+```
+
+The examples below assume an `ArduinoIoTCloud` instance created as shown above.
+
 ### How to connect via **User Credentials**
 
 A user can address any thing they own, so `connection.property(thingId, name)`
@@ -60,8 +100,6 @@ takes an explicit thing id.
 - via **API Credentials**
 
 ```typescript
-import { ArduinoIoTCloud } from 'arduino-iot-js';
-
 (async () => {
   const connection = await ArduinoIoTCloud.connect({
     clientId: 'YOUR_CLIENT_ID',
@@ -86,8 +124,6 @@ import { ArduinoIoTCloud } from 'arduino-iot-js';
 - via **User JWT Token**
 
 ```typescript
-import { ArduinoIoTCloud } from 'arduino-iot-js';
-
 async function retrieveUserToken() {
   // Retrieve JWT Token here
 }
@@ -113,8 +149,6 @@ A device is bound to a single thing (resolved automatically at connect time), so
 `connection.property(name)` takes only the variable name.
 
 ```typescript
-import { ArduinoIoTCloud } from 'arduino-iot-js';
-
 (async () => {
   const connection = await ArduinoIoTCloud.connect({
     deviceId: 'YOUR_DEVICE_ID',
@@ -130,18 +164,4 @@ import { ArduinoIoTCloud } from 'arduino-iot-js';
   // Listen property's updates
   property.subscribe((value) => console.log(value));
 })();
-```
-
-## Override MQTT Library
-
-If for any reason (e.g., a `React Native` project) the standard [mqtt library](https://github.com/mqttjs/MQTT.js) causes issues, it's possible to override it using `createArduinoCloud`.
-
-```ts
-import { createArduinoCloud, MqttClient, MqttOptions } from 'arduino-iot-js';
-
-const mqttConnect = (url: string, options: MqttOptions): MqttClient => {
-  // Put your library here (e.g. new Paho.MQTT.Client(options.host, Number(options.port));)
-};
-
-const ArduinoIoTCloud = createArduinoCloud({ mqttConnect });
 ```

@@ -25,8 +25,15 @@
   ],
   "dependencies": {
     "@arduino/cbor-js": "arduino/cbor-js",
-    "mqtt": "^4.3.7",
     "rxjs": "^6.5.5"
+  },
+  "peerDependencies": {
+    "mqtt": "^4.3.7"
+  },
+  "peerDependenciesMeta": {
+    "mqtt": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -35,6 +42,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "globals": "^17.6.0",
+    "mqtt": "^4.3.7",
     "prettier": "^3.8.4",
     "typescript": "^6.0.0",
     "typescript-eslint": "^8.61.1",

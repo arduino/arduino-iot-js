@@ -11,9 +11,6 @@ importers:
       '@arduino/cbor-js':
         specifier: arduino/cbor-js
         version: https://codeload.github.com/arduino/cbor-js/tar.gz/a55e62ac70349aafb1fb6f3ef4413e6b293c4234
-      mqtt:
-        specifier: ^4.3.7
-        version: 4.3.8
       rxjs:
         specifier: ^6.5.5
         version: 6.6.6
@@ -36,6 +33,9 @@ importers:
       globals:
         specifier: ^17.6.0
         version: 17.6.0
+      mqtt:
+        specifier: ^4.3.7
+        version: 4.3.8
       prettier:
         specifier: ^3.8.4
         version: 3.8.4
@@ -529,9 +529,6 @@ packages:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
-
-  ajv@6.12.6:
-    resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
 
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
@@ -1651,10 +1648,6 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  word-wrap@1.2.3:
-    resolution: {integrity: sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==}
-    engines: {node: '>=0.10.0'}
-
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
@@ -2127,14 +2120,6 @@ snapshots:
 
   acorn@8.16.0: {}
 
-  ajv@6.12.6:
-    dependencies:
-      fast-deep-equal: 3.1.3
-      fast-json-stable-stringify: 2.1.0
-      json-schema-traverse: 0.4.1
-      uri-js: 4.4.1
-    optional: true
-
   ajv@6.15.0:
     dependencies:
       fast-deep-equal: 3.1.3
@@ -2507,7 +2492,7 @@ snapshots:
 
   har-validator@5.1.5:
     dependencies:
-      ajv: 6.12.6
+      ajv: 6.15.0
       har-schema: 2.0.0
     optional: true
 
@@ -2827,7 +2812,7 @@ snapshots:
       levn: 0.3.0
       prelude-ls: 1.1.2
       type-check: 0.3.2
-      word-wrap: 1.2.3
+      word-wrap: 1.2.5
     optional: true
 
   optionator@0.9.4:
@@ -3292,9 +3277,6 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
-
-  word-wrap@1.2.3:
-    optional: true
 
   word-wrap@1.2.5: {}
 

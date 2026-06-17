@@ -21,11 +21,8 @@
 import * as SenML from './senML';
 import { createArduinoCloud } from './connect';
 
-/** Default entry point. Use `createArduinoCloud({ mqttConnect })` to override deps. */
-const ArduinoIoTCloud = createArduinoCloud();
-
 export { SenML };
-export { ArduinoIoTCloud, createArduinoCloud };
+export { createArduinoCloud };
 
 export type { ArduinoCloudDeps } from './connect';
 export type { CloudOptions, ConnectOptions, TokenOptions, APIOptions, CredentialsOptions } from './options';
