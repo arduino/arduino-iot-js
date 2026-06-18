@@ -25,7 +25,7 @@ export { SenML };
 export { createArduinoCloud };
 
 export type { ArduinoCloudDeps } from './connect';
-export type { CloudOptions, ConnectOptions, TokenOptions, APIOptions, CredentialsOptions } from './options';
+export type { CloudOptions, ConnectOptions, TokenOptions, APIOptions, CredentialsOptions } from './types/options';
 export type { MqttConnectFn } from './transport/MqttTransport';
 export type { CloudMessage, CloudMessageValue, MqttOptions } from './transport/types';
 export type { MqttClient } from './mqtt/MqttClient';

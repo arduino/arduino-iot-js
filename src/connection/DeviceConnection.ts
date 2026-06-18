@@ -1,4 +1,4 @@
-import { CloudOptions } from '../options';
+import { CloudOptions } from '../types/options';
 import { MqttTransport } from '../transport/MqttTransport';
 import { ActiveConnection } from './ActiveConnection';
 import { Property } from './Property';

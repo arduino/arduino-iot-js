@@ -3,7 +3,7 @@ import { MqttOptions } from './transport/types';
 import { MqttConnectFn, MqttTransport } from './transport/MqttTransport';
 import { UserConnection } from './connection/UserConnection';
 import { DeviceConnection } from './connection/DeviceConnection';
-import { APIOptions, CloudOptions, ConnectOptions, CredentialsOptions, DEFAULTS, TokenOptions } from './options';
+import { APIOptions, CloudOptions, ConnectOptions, CredentialsOptions, DEFAULTS, TokenOptions } from './types/options';
 
 const DEFAULT_AUDIENCE = 'https://api2.arduino.cc/iot';
 const DEFAULT_TOKEN_URL = 'https://api2.arduino.cc/iot/v1/clients/token';

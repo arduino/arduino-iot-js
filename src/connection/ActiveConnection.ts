@@ -3,7 +3,7 @@ import { Subscription as RxSubscription } from 'rxjs';
 
 import * as SenML from '../senML';
 import * as Utils from '../utils';
-import { CloudOptions } from '../options';
+import { CloudOptions } from '../types/options';
 import { MqttTransport } from '../transport/MqttTransport';
 import { CloudMessage, CloudMessageValue } from '../transport/types';
 import { Subscription } from './Subscription';
