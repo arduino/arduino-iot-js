@@ -10,7 +10,6 @@ export interface MqttClient {
   on(event: 'error', cb: (error: Error) => void): MqttClient;
   on(event: string, cb: MqttCallback): MqttClient;
 
-  once(event: 'error', cb: (error: Error) => void): MqttClient;
   once(event: string, cb: MqttCallback): MqttClient;
 
   publish(topic: string, message: string | Buffer, opts: object, callback?: MqttCallback): MqttClient;

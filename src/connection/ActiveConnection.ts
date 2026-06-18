@@ -31,6 +31,15 @@ export abstract class ActiveConnection {
 
   /** Close the underlying connection. The instance must not be reused after. */
   public close(): void {
+    this.endTransport();
+  }
+
+  /**
+   * Tear down the transport socket. Shared low-level step behind {@link close}
+   * and the reconnect in `UserConnection.updateToken`; unlike `close()` it
+   * carries no "do not reuse" semantics, so it stays free of permanent cleanup.
+   */
+  protected endTransport(): void {
     this.transport.end(true);
   }
 
@@ -44,7 +53,10 @@ export abstract class ActiveConnection {
     predicate: (message: CloudMessage) => boolean,
     listener: PropertyListener<T>
   ): Subscription {
-    this.retainTopic(topic);
+    // Reference-count the topic: the first listener subscribes on the broker.
+    const count = this.topicRefs.get(topic) || 0;
+    if (count === 0) this.transport.subscribe(topic);
+    this.topicRefs.set(topic, count + 1);
 
     const rxSub: RxSubscription = this.transport.messages
       .pipe(filter((m) => m.topic === topic && predicate(m)))
@@ -56,7 +68,15 @@ export abstract class ActiveConnection {
         if (closed) return;
         closed = true;
         rxSub.unsubscribe();
-        this.releaseTopic(topic);
+
+        // Drop the broker subscription once the last listener goes away.
+        const remaining = (this.topicRefs.get(topic) || 1) - 1;
+        if (remaining <= 0) {
+          this.topicRefs.delete(topic);
+          this.transport.unsubscribe(topic);
+        } else {
+          this.topicRefs.set(topic, remaining);
+        }
       },
     };
   }
@@ -87,21 +107,5 @@ export abstract class ActiveConnection {
     const message = SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2);
     this.transport.publish(topic, Utils.toBuffer(message));
     return Promise.resolve();
-  }
-
-  private retainTopic(topic: string): void {
-    const count = this.topicRefs.get(topic) || 0;
-    if (count === 0) this.transport.subscribe(topic);
-    this.topicRefs.set(topic, count + 1);
-  }
-
-  private releaseTopic(topic: string): void {
-    const count = (this.topicRefs.get(topic) || 1) - 1;
-    if (count <= 0) {
-      this.topicRefs.delete(topic);
-      this.transport.unsubscribe(topic);
-    } else {
-      this.topicRefs.set(topic, count);
-    }
   }
 }

@@ -26,7 +26,6 @@ export class Property {
   ) {}
 
   public subscribe<T extends CloudMessageValue>(listener: PropertyListener<T>): Subscription {
-    if (typeof listener !== 'function') throw new Error('subscribe failed: listener must be a function');
     return this.channel.observe(this.name, listener);
   }
 

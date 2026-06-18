@@ -38,7 +38,7 @@ export class UserConnection extends ActiveConnection {
   public async updateToken(newToken: string): Promise<void> {
     while (true) {
       try {
-        this.transport.end(true);
+        this.endTransport();
         await this.transport.connect({ password: newToken });
         this.token = newToken;
         return;
