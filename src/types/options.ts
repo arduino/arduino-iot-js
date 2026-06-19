@@ -13,8 +13,16 @@ export type CloudOptions = {
   onDisconnect?: (message?: unknown) => void;
 };
 
-/** Connect as a user with a pre-obtained JWT. */
-export type TokenOptions = { token: string };
+/** Supplies a JWT on demand. Called on connect and again on every reconnect,
+ * so an expiring token can be refreshed and the connection re-authenticated. */
+export type TokenProvider = () => Promise<string>;
+
+/**
+ * Connect as a user with a JWT. Pass a {@link TokenProvider} (recommended) so the
+ * library can refresh the token on reconnect; a static string also works but
+ * will not be refreshed, so the session ends when that token expires.
+ */
+export type TokenOptions = { token: string | TokenProvider };
 
 /** Connect as a single device using its credentials. */
 export type CredentialsOptions = { deviceId: string; secretKey: string };

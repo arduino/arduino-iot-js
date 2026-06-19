@@ -31,16 +31,7 @@ export abstract class ActiveConnection {
 
   /** Close the underlying connection. The instance must not be reused after. */
   public close(): void {
-    this.endTransport();
-  }
-
-  /**
-   * Tear down the transport socket. Shared low-level step behind {@link close}
-   * and the reconnect in `UserConnection.updateToken`; unlike `close()` it
-   * carries no "do not reuse" semantics, so it stays free of permanent cleanup.
-   */
-  protected endTransport(): void {
-    this.transport.end(true);
+    this.transport.end();
   }
 
   /**

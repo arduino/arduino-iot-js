@@ -1,9 +1,16 @@
 import * as Utils from './utils';
-import { MqttOptions } from './transport/types';
-import { MqttConnectFn, MqttTransport } from './transport/MqttTransport';
+import { CredentialsProvider, MqttConnectFn, MqttCredentials, MqttTransport } from './transport/MqttTransport';
 import { UserConnection } from './connection/UserConnection';
 import { DeviceConnection } from './connection/DeviceConnection';
-import { APIOptions, CloudOptions, ConnectOptions, CredentialsOptions, DEFAULTS, TokenOptions } from './types/options';
+import {
+  APIOptions,
+  CloudOptions,
+  ConnectOptions,
+  CredentialsOptions,
+  DEFAULTS,
+  TokenOptions,
+  TokenProvider,
+} from './types/options';
 
 const DEFAULT_AUDIENCE = 'https://api2.arduino.cc/iot';
 const DEFAULT_TOKEN_URL = 'https://api2.arduino.cc/iot/v1/clients/token';
@@ -39,26 +46,38 @@ export function createArduinoCloud(deps: ArduinoCloudDeps) {
     const opts = { ...DEFAULTS, ...options };
 
     if (isCredentials(opts)) return connectDevice(opts);
-    if (isToken(opts)) return connectUser(opts.token, opts);
-    if (isAPI(opts)) return connectUser(await exchangeToken(opts), opts);
+    if (isToken(opts)) return connectUser(tokenCredentials(opts.token), opts);
+    if (isAPI(opts)) return connectUser(apiCredentials(opts), opts);
 
     throw new Error('connect failed: options not valid');
   }
 
   async function connectDevice(opts: CredentialsOptions & CloudOptions): Promise<DeviceConnection> {
     const url = `mqtts://mqtts-up.${opts.host}:${opts.port || 8884}`;
-    const transport = new MqttTransport(url, credentials(opts.deviceId, opts.secretKey), mqttConnect);
+    // Device credentials are static — the provider just hands them back.
+    const credentials: CredentialsProvider = () =>
+      Promise.resolve({ username: opts.deviceId, password: opts.secretKey, clientId: opts.deviceId });
+    const transport = new MqttTransport(url, credentials, mqttConnect);
     await transport.connect();
     return DeviceConnection.resolve(transport, opts, opts.deviceId);
   }
 
-  async function connectUser(token: string, opts: CloudOptions): Promise<UserConnection> {
+  async function connectUser(credentials: CredentialsProvider, opts: CloudOptions): Promise<UserConnection> {
     const url = `wss://wss.${opts.host}:${opts.port || 8443}/mqtt`;
-    const payload = Utils.decode(token) as { 'http://arduino.cc/id': string };
-    const username = payload['http://arduino.cc/id'];
-    const transport = new MqttTransport(url, credentials(username, token), mqttConnect);
+    const transport = new MqttTransport(url, credentials, mqttConnect);
     await transport.connect();
-    return new UserConnection(transport, opts, token);
+    return new UserConnection(transport, opts);
+  }
+
+  /** Wrap a user-supplied token (static or a getter) as a credentials provider. */
+  function tokenCredentials(token: string | TokenProvider): CredentialsProvider {
+    const getToken: TokenProvider = typeof token === 'function' ? token : () => Promise.resolve(token);
+    return async () => credentialsFromToken(await getToken());
+  }
+
+  /** Re-runs the OAuth exchange on every (re)connect, yielding a fresh JWT. */
+  function apiCredentials(opts: APIOptions & CloudOptions): CredentialsProvider {
+    return async () => credentialsFromToken(await exchangeToken(opts));
   }
 
   async function exchangeToken(opts: APIOptions & CloudOptions): Promise<string> {
@@ -82,6 +101,9 @@ export function createArduinoCloud(deps: ArduinoCloudDeps) {
   return { connect };
 }
 
-function credentials(username: string, password: string): MqttOptions {
-  return { username, password, clientId: username };
+/** Derive MQTT credentials from a JWT: username is the user id claim, password the token. */
+function credentialsFromToken(token: string): MqttCredentials {
+  const payload = Utils.decode(token) as { 'http://arduino.cc/id': string };
+  const username = payload['http://arduino.cc/id'];
+  return { username, password: token, clientId: username };
 }

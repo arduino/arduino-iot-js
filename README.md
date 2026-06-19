@@ -55,6 +55,11 @@ session. From it you obtain a `property(...)` handle, which you can `subscribe`
 to and `publish` to. `subscribe` returns a subscription you can later
 `unsubscribe`, and `connection.close()` tears down the whole session.
 
+The connection reconnects on its own if the broker drops the socket: lifecycle
+callbacks keep firing and retained subscriptions are restored automatically, and
+(for the token path) credentials are refreshed on each reconnect — so an expiring
+JWT no longer kills the session.
+
 > **Migrating from `0.x`?** The old `client.sendProperty()` /
 > `client.onPropertyValue()` / `client.disconnect()` API has been replaced by
 > the connection-first API shown below.
@@ -123,16 +128,18 @@ takes an explicit thing id.
 
 - via **User JWT Token**
 
+Pass `token` as a function (`() => Promise<string>`). It's called on connect and
+again on every reconnect, so an expiring JWT is refreshed and the connection
+re-authenticates automatically:
+
 ```typescript
-async function retrieveUserToken() {
-  // Retrieve JWT Token here
+async function retrieveUserToken(): Promise<string> {
+  // Retrieve (a fresh) JWT Token here
 }
 
 (async () => {
-  const token = await retrieveUserToken();
-
   const connection = await ArduinoIoTCloud.connect({
-    token,
+    token: retrieveUserToken,
     onDisconnect: (message) => console.error(message),
   });
 
@@ -142,6 +149,9 @@ async function retrieveUserToken() {
   property.subscribe((value) => console.log(value));
 })();
 ```
+
+> You can also pass a plain `token: 'YOUR_JWT'` string, but it won't be refreshed —
+> the session ends when that token expires. The function form is recommended.
 
 ### How to connect via **Device Credentials**
 

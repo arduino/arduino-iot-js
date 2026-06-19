@@ -7,6 +7,7 @@ export type MqttCallback = (...args: unknown[]) => void;
  * `createArduinoCloud({ mqttConnect })`.
  */
 export interface MqttClient {
+  on(event: 'message', cb: (topic: string, payload: Buffer) => void): MqttClient;
   on(event: 'error', cb: (error: Error) => void): MqttClient;
   on(event: string, cb: MqttCallback): MqttClient;
 
@@ -20,6 +21,4 @@ export interface MqttClient {
   subscribe(topic: string | string[], opts?: object, callback?: MqttCallback): MqttClient;
 
   unsubscribe(topic: string | string[], opts?: object, callback?: MqttCallback): MqttClient;
-
-  reconnect(opts?: object): MqttClient;
 }
