@@ -37,13 +37,3 @@ export type APIOptions = {
 
 /** Everything `connect()` accepts: shared options plus exactly one credential set. */
 export type ConnectOptions = CloudOptions & (TokenOptions | CredentialsOptions | APIOptions);
-
-const NOOP = (): void => undefined;
-
-export const DEFAULTS: CloudOptions = {
-  host: 'iot.arduino.cc',
-  useCloudProtocolV2: true,
-  onOffline: NOOP,
-  onConnected: NOOP,
-  onDisconnect: NOOP,
-};

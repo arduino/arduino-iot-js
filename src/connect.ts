@@ -7,13 +7,21 @@ import {
   CloudOptions,
   ConnectOptions,
   CredentialsOptions,
-  DEFAULTS,
   TokenOptions,
   TokenProvider,
 } from './types/options';
 
 const DEFAULT_AUDIENCE = 'https://api2.arduino.cc/iot';
 const DEFAULT_TOKEN_URL = 'https://api2.arduino.cc/iot/v1/clients/token';
+
+const NOOP = (): void => undefined;
+const DEFAULTS: CloudOptions = {
+  host: 'iot.arduino.cc',
+  useCloudProtocolV2: true,
+  onOffline: NOOP,
+  onConnected: NOOP,
+  onDisconnect: NOOP,
+};
 
 type FetchFn = typeof fetch;
 
