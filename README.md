@@ -37,91 +37,141 @@ Via pnpm
 $ pnpm add arduino-iot-js
 ```
 
+On Node.js or the browser you'll also want the [`mqtt`](https://github.com/mqttjs/MQTT.js)
+library, which is an optional peer dependency (see [Providing the MQTT client](#providing-the-mqtt-client)):
+
+```bash
+$ npm install mqtt
+```
+
 ## How to use
 
 The MQTT connection relies on Username / Password authentication.
 
 Under the hood, this module could uses your user ID (plus a timestamp) as _Username_ and a valid JWT Token as _Password_ when needs to connect to every properties (You can use either a valid JWT token or just your API Credentials) or some device credentials.
 
+`connect()` returns an **active connection** object that encapsulates the live
+session. From it you obtain a `property(...)` handle, which you can `subscribe`
+to and `publish` to. `subscribe` returns a subscription you can later
+`unsubscribe`, and `connection.close()` tears down the whole session.
+
+The connection reconnects on its own if the broker drops the socket: lifecycle
+callbacks keep firing and retained subscriptions are restored automatically, and
+(for the token path) credentials are refreshed on each reconnect — so an expiring
+JWT no longer kills the session.
+
+> **Migrating from `0.x`?** The old `client.sendProperty()` /
+> `client.onPropertyValue()` / `client.disconnect()` API has been replaced by
+> the connection-first API shown below.
+
+### Providing the MQTT client
+
+This library is **transport-agnostic**: it never imports `mqtt` itself, so nothing
+pulls it into your bundle (important for `React Native`). You build an entry point
+with `createArduinoCloud({ mqttConnect })`, injecting the MQTT client factory.
+
+On Node or the browser, install [`mqtt`](https://github.com/mqttjs/MQTT.js) (it's an
+optional peer dependency) and pass its `connect`:
+
+```ts
+import { connect } from 'mqtt';
+import { createArduinoCloud, type MqttConnectFn } from 'arduino-iot-js';
+
+const ArduinoIoTCloud = createArduinoCloud({
+  mqttConnect: connect as unknown as MqttConnectFn,
+});
+```
+
+On `React Native` (or anywhere the standard library doesn't work), provide your own
+client implementing the `MqttClient` contract instead — without ever installing `mqtt`:
+
+```ts
+import { createArduinoCloud, MqttClient, MqttOptions } from 'arduino-iot-js';
+
+const ArduinoIoTCloud = createArduinoCloud({
+  mqttConnect: (url: string, options: MqttOptions): MqttClient => {
+    // Put your library here (e.g. new Paho.MQTT.Client(options.host, Number(options.port)))
+  },
+});
+```
+
+The examples below assume an `ArduinoIoTCloud` instance created as shown above.
+
 ### How to connect via **User Credentials**
+
+A user can address any thing they own, so `connection.property(thingId, name)`
+takes an explicit thing id.
 
 - via **API Credentials**
 
 ```typescript
-import { ArduinoIoTCloud } from 'arduino-iot-js';
-
 (async () => {
-  const client = await ArduinoIoTCloud.connect({
+  const connection = await ArduinoIoTCloud.connect({
     clientId: 'YOUR_CLIENT_ID',
     clientSecret: 'YOUR_CLIENT_SECRET',
     onDisconnect: (message) => console.error(message),
   });
 
+  const property = connection.property('YOUR_THING_ID', 'YOUR_VARIABLE_NAME');
+
   // Send a value to a thing property
-  const value = 'some value';
-  client.sendProperty('YOUR_THING_ID', 'YOUR_VARIABLE_NAME', value);
+  await property.publish('some value');
 
   // Listen to a thing property's changes
-  client.onPropertyValue('YOUR_THING_ID', 'ANOTHER_VARIABLE_NAME', (value) => console.log(value));
+  const subscription = property.subscribe((value) => console.log(value));
+
+  // Later, stop listening / tear down the connection
+  subscription.unsubscribe();
+  connection.close();
 })();
 ```
 
 - via **User JWT Token**
 
-```typescript
-import { ArduinoIoTCloud } from 'arduino-iot-js';
+Pass `token` as a function (`() => Promise<string>`). It's called on connect and
+again on every reconnect, so an expiring JWT is refreshed and the connection
+re-authenticates automatically:
 
-async function retrieveUserToken() {
-  // Retrieve JWT Token here
+```typescript
+async function retrieveUserToken(): Promise<string> {
+  // Retrieve (a fresh) JWT Token here
 }
 
 (async () => {
-  const token = await retrieveUserToken();
-
-  const client = await ArduinoIoTCloud.connect({
-    token,
+  const connection = await ArduinoIoTCloud.connect({
+    token: retrieveUserToken,
     onDisconnect: (message) => console.error(message),
   });
 
-  // Send a value to a thing property
-  const value = 'some value';
-  client.sendProperty('YOUR_THING_ID', 'YOUR_VARIABLE_NAME', value);
+  const property = connection.property('YOUR_THING_ID', 'YOUR_VARIABLE_NAME');
 
-  // Listen to a thing property's changes
-  client.onPropertyValue('YOUR_THING_ID', 'ANOTHER_VARIABLE_NAME', (value) => console.log(value));
+  await property.publish('some value');
+  property.subscribe((value) => console.log(value));
 })();
 ```
 
+> You can also pass a plain `token: 'YOUR_JWT'` string, but it won't be refreshed —
+> the session ends when that token expires. The function form is recommended.
+
 ### How to connect via **Device Credentials**
 
-```typescript
-import { ArduinoIoTCloud } from 'arduino-iot-js';
+A device is bound to a single thing (resolved automatically at connect time), so
+`connection.property(name)` takes only the variable name.
 
+```typescript
 (async () => {
-  const client = await ArduinoIoTCloud.connect({
+  const connection = await ArduinoIoTCloud.connect({
     deviceId: 'YOUR_DEVICE_ID',
     secretKey: 'YOUR_SECRET_KEY',
     onDisconnect: (message) => console.error(message),
   });
 
+  const property = connection.property('YOUR_VARIABLE_NAME');
+
   // Send property's values as a device
-  const value = 'some value';
-  client.sendProperty('YOUR_VARIABLE_NAME', value);
+  await property.publish('some value');
 
   // Listen property's updates
-  client.onPropertyValue('ANOTHER_VARIABLE_NAME', (value) => console.log(value));
+  property.subscribe((value) => console.log(value));
 })();
-```
-
-## Override MQTT Library
-
-If for any reason (e.g., a `React Native` project) the standard [mqtt library](https://github.com/mqttjs/MQTT.js) causes issues, it's possible to override it using `ArduinoIoTCloudFactory`.
-
-```ts
-import { ArduinoIoTCloudFactory, MqttConnect, ConnectionOptions } from 'arduino-iot-js';
-
-const connect = (url: string, options: ConnectionOptions) => // Put your library here (es. new Paho.MQTT.Client(options.host, Number(options.port)); )
-
-const ArduinoIoTCloud = ArduinoIoTCloudFactory(connect);
-
 ```
