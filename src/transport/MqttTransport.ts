@@ -72,6 +72,12 @@ export class MqttTransport {
     this.client?.on(event, cb);
   }
 
+  /**
+   * Fire-and-forget publish. NOTE: a message published while the socket is down
+   * (between a drop and the next successful reconnect) is silently lost — there
+   * is no client to hand it to.
+   * TODO: Buffering outbound messages across reconnects as a future improvement.
+   */
   public publish(topic: string, message: Buffer): void {
     this.client?.publish(topic, message, { qos: 1, retain: false });
   }
@@ -91,11 +97,28 @@ export class MqttTransport {
     const credentials = await this.credentials();
     const options: MqttOptions = { ...BaseConnectionOptions, ...credentials, reconnectPeriod: 0 };
 
+    // Release the previous client (a dropped connection, or a failed reconnect
+    // attempt) before replacing it, so its socket and listeners don't linger.
+    // Null it out first so operations during the (possibly async) connect no-op
+    // cleanly instead of hitting the dead client. Its 'close' won't trigger
+    // another reconnect: scheduleReconnect() bails while `reconnecting` is set.
+    this.client?.end(true);
+    this.client = undefined;
+
     const client = (this.client = await this.mqttConnect(this.url, options));
     this.listeners.forEach((handlers, event) => handlers.forEach((cb) => client.on(event, cb)));
     client.on('message', (topic: string, msg: Buffer) => this.onMessage(topic, msg));
 
     await this.waitForConnect(client);
+
+    // close() may have landed while we were resolving credentials or connecting,
+    // when `this.client` was undefined and so couldn't be ended. Tear down the
+    // freshly-built client rather than leaving a live connection after close.
+    if (this.closed) {
+      client.end(true);
+      this.client = undefined;
+      return;
+    }
 
     // Replay retained subscriptions onto the fresh (clean-session) connection.
     this.topics.forEach((topic) => client.subscribe(topic));
