@@ -21,6 +21,7 @@ const DEFAULTS: CloudOptions = {
   onOffline: NOOP,
   onConnected: NOOP,
   onDisconnect: NOOP,
+  onError: NOOP,
 };
 
 type FetchFn = typeof fetch;
@@ -65,14 +66,14 @@ export function createArduinoCloud(deps: ArduinoCloudDeps) {
     // Device credentials are static — the provider just hands them back.
     const credentials: CredentialsProvider = () =>
       Promise.resolve({ username: opts.deviceId, password: opts.secretKey, clientId: opts.deviceId });
-    const transport = new MqttTransport(url, credentials, mqttConnect);
+    const transport = new MqttTransport(url, credentials, mqttConnect, opts.onError);
     await transport.connect();
     return DeviceConnection.resolve(transport, opts, opts.deviceId);
   }
 
   async function connectUser(credentials: CredentialsProvider, opts: CloudOptions): Promise<UserConnection> {
     const url = `wss://wss.${opts.host}:${opts.port || 8443}/mqtt`;
-    const transport = new MqttTransport(url, credentials, mqttConnect);
+    const transport = new MqttTransport(url, credentials, mqttConnect, opts.onError);
     await transport.connect();
     return new UserConnection(transport, opts);
   }

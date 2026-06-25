@@ -50,7 +50,8 @@ export class MqttTransport {
   constructor(
     private readonly url: string,
     private readonly credentials: CredentialsProvider,
-    private readonly mqttConnect: MqttConnectFn
+    private readonly mqttConnect: MqttConnectFn,
+    private readonly onError?: (error: unknown) => void
   ) {}
 
   /** Open the connection. Rejects if the first attempt fails. */
@@ -167,8 +168,11 @@ export class MqttTransport {
       try {
         await this.openClient();
         return;
-      } catch {
-        // Keep retrying with backoff until reconnected or close() is called.
+      } catch (error) {
+        // Surface the failed attempt (bad credentials, token exchange, a
+        // rejected connection, …) — some paths emit no socket event, so this is
+        // the only signal. Keep retrying with backoff until connected or closed.
+        this.onError?.(error);
       }
     }
   }

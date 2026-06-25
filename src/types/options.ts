@@ -11,6 +11,10 @@ export type CloudOptions = {
   onOffline?: () => void;
   onConnected?: () => void;
   onDisconnect?: (message?: unknown) => void;
+  /** Called with the error of each failed (re)connect attempt — including
+   * credential/token-exchange failures, which emit no socket event. The
+   * transport keeps retrying; react here (e.g. `close()` on a permanent error). */
+  onError?: (error: unknown) => void;
 };
 
 /** Supplies a JWT on demand. Called on connect and again on every reconnect,
