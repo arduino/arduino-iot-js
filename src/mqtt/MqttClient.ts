@@ -7,6 +7,10 @@ export type MqttCallback = (...args: unknown[]) => void;
  * `createArduinoCloud({ mqttConnect })`.
  */
 export interface MqttClient {
+  /** Whether the client is currently connected. Read to avoid missing an
+   * already-fired `connect` event when `mqttConnect` resolves post-connection. */
+  readonly connected: boolean;
+
   on(event: 'message', cb: (topic: string, payload: Buffer) => void): MqttClient;
   on(event: 'error', cb: (error: Error) => void): MqttClient;
   on(event: string, cb: MqttCallback): MqttClient;

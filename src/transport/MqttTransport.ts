@@ -130,6 +130,13 @@ export class MqttTransport {
 
   private waitForConnect(client: MqttClient): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+      // The client may already be connected if mqttConnect resolved after the
+      // 'connect' event fired — check synchronously so we don't miss it and hang.
+      if (client.connected) {
+        resolve();
+        return;
+      }
+
       let settled = false;
       client.once('connect', () => {
         if (settled) return;
