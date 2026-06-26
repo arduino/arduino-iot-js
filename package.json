@@ -24,8 +24,7 @@
     "src"
   ],
   "dependencies": {
-    "@arduino/cbor-js": "arduino/cbor-js",
-    "rxjs": "^6.5.5"
+    "@arduino/cbor-js": "arduino/cbor-js"
   },
   "peerDependencies": {
     "mqtt": "^4.3.7"

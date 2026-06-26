@@ -1,12 +1,9 @@
-import { filter } from 'rxjs/operators';
-import { Subscription as RxSubscription } from 'rxjs';
-
 import * as SenML from '../senML';
 import * as Utils from '../utils';
 import { CloudOptions } from '../types/options';
 import { MqttTransport } from '../transport/MqttTransport';
+import { Subscription } from '../transport/Emitter';
 import { CloudMessage, CloudMessageValue } from '../transport/types';
-import { Subscription } from './Subscription';
 import { PropertyChannel, PropertyListener } from './Property';
 
 /**
@@ -49,16 +46,16 @@ export abstract class ActiveConnection {
     if (count === 0) this.transport.subscribe(topic);
     this.topicRefs.set(topic, count + 1);
 
-    const rxSub: RxSubscription = this.transport.messages
-      .pipe(filter((m) => m.topic === topic && predicate(m)))
-      .subscribe((m) => listener(m.value as T));
+    const subscription = this.transport.messages.subscribe((m) => {
+      if (m.topic === topic && predicate(m)) listener(m.value as T);
+    });
 
     let closed = false;
     return {
       unsubscribe: () => {
         if (closed) return;
         closed = true;
-        rxSub.unsubscribe();
+        subscription.unsubscribe();
 
         // Drop the broker subscription once the last listener goes away.
         const remaining = (this.topicRefs.get(topic) || 1) - 1;

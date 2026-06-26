@@ -40,4 +40,4 @@ export type { ActiveConnection } from './connection/ActiveConnection';
 export type { UserConnection } from './connection/UserConnection';
 export type { DeviceConnection } from './connection/DeviceConnection';
 export type { Property, PropertyListener } from './connection/Property';
-export type { Subscription } from './connection/Subscription';
+export type { Subscription } from './transport/Emitter';

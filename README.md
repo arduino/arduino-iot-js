@@ -64,6 +64,32 @@ JWT no longer kills the session.
 > `client.onPropertyValue()` / `client.disconnect()` API has been replaced by
 > the connection-first API shown below.
 
+### Events and subscriptions
+
+`property.subscribe(listener)` calls `listener` with the property's value every
+time an update arrives from the cloud, and returns a `Subscription`:
+
+```ts
+const subscription = property.subscribe((value) => console.log(value));
+// ...later, stop this listener:
+subscription.unsubscribe();
+```
+
+A few things worth knowing about the model:
+
+- **Many listeners share one broker subscription.** Subscriptions are
+  reference-counted per topic: the first `subscribe` on a property opens the MQTT
+  subscription, and the broker is only unsubscribed once the last listener calls
+  `unsubscribe`. Subscribing the same property from several places is cheap.
+- **Subscriptions survive reconnects.** If the broker drops the socket, the
+  transport restores the retained topic subscriptions on the new connection, so
+  your listeners keep firing without re-subscribing.
+- **`connection.close()` tears everything down** — every listener and the
+  underlying socket. The connection must not be reused afterwards.
+
+Internally this runs on a small built-in event emitter; the library has no
+`rxjs` (or other heavy) runtime dependency.
+
 ### Providing the MQTT client
 
 This library is **transport-agnostic**: it never imports `mqtt` itself, so nothing
