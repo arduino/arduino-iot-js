@@ -1,8 +1,7 @@
-import { Observable, Subject } from 'rxjs';
-
 import * as SenML from '../senML';
 import * as Utils from '../utils';
 import { MqttCallback, MqttClient } from '../mqtt/MqttClient';
+import { Emitter, Subscribable } from './Emitter';
 import { BaseConnectionOptions, CloudMessage, CloudMessageValue, MqttOptions } from './types';
 
 export type MqttConnectFn = (url: string, options: MqttOptions) => MqttClient | Promise<MqttClient>;
@@ -38,9 +37,9 @@ export class MqttTransport {
   private closed = false;
   private reconnecting = false;
 
-  private readonly messagesSubject = new Subject<CloudMessage>();
+  private readonly messagesEmitter = new Emitter<CloudMessage>();
   /** Decoded messages for every subscribed topic. Survives reconnects. */
-  public readonly messages: Observable<CloudMessage> = this.messagesSubject;
+  public readonly messages: Subscribable<CloudMessage> = this.messagesEmitter;
 
   // Re-applied to every fresh client so callbacks and subscriptions survive a
   // reconnect (and the credential refresh that comes with it).
@@ -178,8 +177,8 @@ export class MqttTransport {
   }
 
   private onMessage(topic: string, msg: Buffer): void {
-    if (topic.indexOf('/s/o') > -1) this.messagesSubject.next({ topic, value: msg.toString() });
-    else this.decode(topic, msg).forEach((m) => this.messagesSubject.next(m));
+    if (topic.indexOf('/s/o') > -1) this.messagesEmitter.emit({ topic, value: msg.toString() });
+    else this.decode(topic, msg).forEach((m) => this.messagesEmitter.emit(m));
   }
 
   private decode(topic: string, msg: Buffer): CloudMessage[] {
