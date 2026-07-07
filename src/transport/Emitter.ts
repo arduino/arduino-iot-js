@@ -40,6 +40,19 @@ export class Emitter<T> implements Subscribable<T> {
   }
 
   public emit(value: T): void {
-    [...this.listeners].forEach((listener) => listener(value));
+    // Snapshot so a listener that (un)subscribes during dispatch is safe, and
+    // isolate each call so one throwing listener can't stop delivery to the
+    // rest. A thrown error is re-raised on a fresh task — the way rxjs's Subject
+    // reported unhandled subscriber errors — so it still reaches the host's
+    // global error handler instead of being swallowed here.
+    [...this.listeners].forEach((listener) => {
+      try {
+        listener(value);
+      } catch (error) {
+        setTimeout(() => {
+          throw error;
+        });
+      }
+    });
   }
 }
