@@ -1,5 +1,5 @@
 import { CloudMessageValue } from '../transport/types';
-import { Subscription } from './Subscription';
+import { Subscription } from '../transport/Emitter';
 
 export type PropertyListener<T extends CloudMessageValue> = (value: T) => void;
 
