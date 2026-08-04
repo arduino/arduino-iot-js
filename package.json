@@ -24,7 +24,7 @@
     "src"
   ],
   "dependencies": {
-    "@arduino/cbor-js": "arduino/cbor-js"
+    "@arduino/cbor-js": "^0.1.5"
   },
   "peerDependencies": {
     "mqtt": "^4.3.7"
@@ -54,6 +54,7 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "typecheck": "tsc -p tsconfig.eslint.json",
     "clean": "rm -rf node_modules dist",
     "build": "vite build",
     "dev": "vite build --watch"

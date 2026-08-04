@@ -23,6 +23,9 @@
     +---------------+-------+------------+------------+------------+
 */
 
+/** A SenML label always carries a primitive value. */
+export type SenMLValue = string | number | boolean;
+
 export type SenML = {
   bn?: string;
   bt?: number;
@@ -39,5 +42,7 @@ export type SenML = {
   s?: number;
   t?: number;
   ut?: number;
-  [key: string]: any;
+  // CloudProtocol V2 swaps the labels above for their numeric CBOR counterparts
+  // (see the table), so a record can be keyed by those as well.
+  [label: string]: SenMLValue | undefined;
 };

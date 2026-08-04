@@ -185,10 +185,15 @@ export class MqttTransport {
     let current = '';
     let attribute = '';
     let previous = '';
-    let valueToSend: CloudMessageValue = {};
+
+    // A property arrives as one record per `name:attribute` pair, which are
+    // recomposed into `attributes`; a bare name replaces the value outright.
+    // `valueToSend` points at the record while attributes are being collected.
+    let attributes: Record<string, CloudMessageValue | undefined> = {};
+    let valueToSend: CloudMessageValue | undefined = attributes;
 
     const messages: CloudMessage[] = [];
-    const properties = SenML.CBOR.decode(Utils.toArrayBuffer(msg));
+    const properties = SenML.fromCBOR(Utils.toArrayBuffer(msg));
 
     properties.forEach((p) => {
       const value = SenML.valueFrom(p);
@@ -198,10 +203,11 @@ export class MqttTransport {
       if (previous !== current) {
         messages.push({ topic, propertyName: previous, value: valueToSend });
         previous = current;
-        valueToSend = {};
+        attributes = {};
+        valueToSend = attributes;
       }
 
-      if (attribute) valueToSend[attribute] = value;
+      if (attribute) attributes[attribute] = value;
       else valueToSend = value;
     });
 

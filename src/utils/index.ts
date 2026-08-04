@@ -84,23 +84,23 @@ export function isNil(value: unknown): value is undefined | null {
   return value === undefined || value == null;
 }
 
-export function isObject(value: CloudMessageValue): value is object {
+export function isObject(value: unknown): value is Record<string, CloudMessageValue> {
   return !isNil(value) && typeof value === 'object';
 }
 
-export function isNumber(value: CloudMessageValue): value is number {
+export function isNumber(value: unknown): value is number {
   return !isNil(value) && typeof value === 'number';
 }
 
-export function isString(value: CloudMessageValue): value is string {
+export function isString(value: unknown): value is string {
   return !isNil(value) && typeof value === 'string';
 }
 
-export function isBoolean(value: CloudMessageValue): value is boolean {
+export function isBoolean(value: unknown): value is boolean {
   return !isNil(value) && typeof value === 'boolean';
 }
 
-export function isArray<T>(value: CloudMessageValue): value is T[] {
+export function isArray<T>(value: unknown): value is T[] {
   return !isNil(value) && Array.isArray(value);
 }
 

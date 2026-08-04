@@ -3,7 +3,8 @@ export type CloudMessageValue = string | number | boolean | object;
 export type CloudMessage = {
   topic: string;
   propertyName?: string;
-  value: CloudMessageValue;
+  /** Undefined when the SenML record carried none of `v`/`vs`/`vb`. */
+  value: CloudMessageValue | undefined;
 };
 
 export type MqttOptions = {
