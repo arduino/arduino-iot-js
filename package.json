@@ -54,7 +54,7 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "tsc -p tsconfig.eslint.json",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules dist",
     "build": "vite build",
     "dev": "vite build --watch"

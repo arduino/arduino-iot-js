@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["src", "test", "*.mts"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "lib": ["es2019", "dom"],
