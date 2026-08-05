@@ -1,0 +1,17 @@
+name: Setup Bot Identity
+description: Configures git to use ArduinoBot identity
+
+inputs:
+  token:
+    description: Bot token
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure git identity
+      shell: bash
+      run: |
+        git config --global user.name "ArduinoBot"
+        git config --global user.email "4233897+ArduinoBot@users.noreply.github.com"
+        git config --global url.https://x-oauth-basic:${{ inputs.token }}@github.com/.insteadOf https://github.com/
