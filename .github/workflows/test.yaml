@@ -25,14 +25,15 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Integration tests
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: "18.x"
+          node-version: 24
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - run: pnpm typecheck
       - run: pnpm test
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}

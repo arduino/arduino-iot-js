@@ -23,24 +23,24 @@ describe('utils type guards', () => {
     [false, false],
     [{}, false],
   ])('isNil(%s) === %s', (value, expected) => {
-    expect(isNil(value as any)).toBe(expected);
+    expect(isNil(value)).toBe(expected);
   });
 
   it('discriminates primitive types', () => {
     expect(isNumber(42)).toBe(true);
-    expect(isNumber('42' as any)).toBe(false);
+    expect(isNumber('42')).toBe(false);
 
     expect(isString('hello')).toBe(true);
-    expect(isString(42 as any)).toBe(false);
+    expect(isString(42)).toBe(false);
 
     expect(isBoolean(true)).toBe(true);
-    expect(isBoolean(0 as any)).toBe(false);
+    expect(isBoolean(0)).toBe(false);
 
-    expect(isObject({ a: 1 } as any)).toBe(true);
-    expect(isObject(null as any)).toBe(false);
+    expect(isObject({ a: 1 })).toBe(true);
+    expect(isObject(null)).toBe(false);
 
-    expect(isArray([1, 2, 3] as any)).toBe(true);
-    expect(isArray('not array' as any)).toBe(false);
+    expect(isArray([1, 2, 3])).toBe(true);
+    expect(isArray('not array')).toBe(false);
   });
 });
 
