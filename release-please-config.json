@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "last-release-sha": "4a0a53b6f5bf77c31215fc940cb41695342170fc",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "arduino-iot-js",
+      "changelog-path": "CHANGELOG.md",
+      "include-v-in-tag": true,
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true
+    }
+  }
+}
