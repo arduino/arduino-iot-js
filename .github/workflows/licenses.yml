@@ -1,0 +1,71 @@
+name: 📃 Update licenses
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".licensed.yml"
+
+jobs:
+  update-licenses:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: ✅ Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🤖 Setup bot
+        uses: ./.github/actions/setup-bot
+        with:
+          token: ${{ secrets.ARDUINOBOT_TOKEN }}
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ruby
+
+      - name: 📃 Setup licensed
+        uses: licensee/setup-licensed@v1.3.2
+        with:
+          github_token: ${{ secrets.ARDUINOBOT_TOKEN }}
+          version: 5.x
+
+      - name: 📃 Update licenses
+        id: update-licenses
+        uses: licensee/licensed-ci@v1.12.1
+        continue-on-error: true
+        with:
+          commit_message: "chore: update licenses"
+          workflow: "branch"
+          github_token: ${{ secrets.ARDUINOBOT_TOKEN }}
+
+      - name: 📃 Update missing licenses
+        if: steps.update-licenses.outputs.pr_number != ''
+        run: |
+          bash scripts/resolve-missing-licenses.sh
+          # If there are changes, commit and push them to the PR branch.
+          pr_branch="${{ steps.update-licenses.outputs.licenses_branch }}"
+          git checkout --track origin/"$pr_branch"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "fix: update missing licenses"
+            git push origin "$pr_branch"
+          else
+            echo "No license updates needed."
+          fi

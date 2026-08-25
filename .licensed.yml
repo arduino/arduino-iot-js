@@ -1,0 +1,32 @@
+sources:
+  pnpm: true
+
+allowed:
+  - mit
+  - apache-2.0
+  - bsd-2-clause
+  - bsd-3-clause
+  - isc
+  - unlicense
+  - wtfpl
+  - 0bsd
+  - zlib
+  - bsl-1.0
+  - mpl-2.0
+  - epl-2.0
+  - cddl-1.0
+  - gpl-1.0-only
+  - gpl-1.0-or-later
+  - gpl-2.0-only
+  - gpl-2.0-or-later
+  - gpl-3.0-only
+  - gpl-3.0-or-later
+  - lgpl-3.0-linking-exception
+  - cc-by-4.0
+  # The following licenses were parsed from `other`
+  - cc0-1.0
+  - python-2.0
+  - gplv3
+
+apps:
+  - source_path: ./
