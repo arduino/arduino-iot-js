@@ -176,6 +176,8 @@ const ArduinoIoTCloud = ArduinoIoTCloudFactory(connect);
 
 ```
 
+The client must call the `callback` it receives in `publish` once the message is acknowledged (QoS 1), or with an error when it could not be published: `sendProperty` settles on that call, and stays pending if the broker never acknowledges the message. `sendMessage` resolves as soon as the message is handed to the client.
+
 ## Development
 
 ### Testing
