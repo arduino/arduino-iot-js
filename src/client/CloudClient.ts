@@ -145,10 +145,20 @@ export class CloudClient implements ICloudClient {
   ): Promise<void> {
     const topic = `/a/t/${thingId}/e/i`;
     const values = SenML.parse(name, value, timestamp, this.options.useCloudProtocolV2, null);
-    return this.sendMessage(
-      topic,
-      SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2)
-    );
+    const message = SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2);
+    return new Promise((resolve, reject) => {
+      if (!this.connection) return reject(new Error('send message failed: no connection found'));
+
+      this.connection.publish(
+        topic,
+        Utils.toBuffer(message),
+        {
+          qos: 1,
+          retain: false,
+        },
+        (error?: Error) => (error ? reject(error) : resolve())
+      );
+    });
   }
 
   public async onPropertyValue<T extends CloudMessageValue>(
