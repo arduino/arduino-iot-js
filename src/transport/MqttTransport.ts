@@ -73,13 +73,24 @@ export class MqttTransport {
   }
 
   /**
-   * Fire-and-forget publish. NOTE: a message published while the socket is down
-   * (between a drop and the next successful reconnect) is silently lost — there
-   * is no client to hand it to.
+   * Publish at QoS 1. Resolves when the client reports the publish outcome
+   * through its callback (the broker's ack), and rejects with the client's
+   * error, or immediately when there is no connected client (socket down between a
+   * drop and the next successful reconnect). It stays pending if the client never
+   * calls back — callers that need a bound should race it with a timeout.
    * TODO: Buffering outbound messages across reconnects as a future improvement.
    */
-  public publish(topic: string, message: Buffer): void {
-    this.client?.publish(topic, message, { qos: 1, retain: false });
+  public publish(topic: string, message: Buffer): Promise<void> {
+    const client = this.client;
+    if (!client?.connected) return Promise.reject(new Error('publish failed: no connection found'));
+
+    return new Promise<void>((resolve, reject) => {
+      client.publish(topic, message, { qos: 1, retain: false }, (error?: unknown) => {
+        if (!error) resolve();
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- hand the client's error through as is
+        else reject(error);
+      });
+    });
   }
 
   public subscribe(topic: string): void {

@@ -121,6 +121,12 @@ const ArduinoIoTCloud = createArduinoCloud({
 });
 ```
 
+Your client's `publish` must call the `callback` it receives (the last argument)
+once the message is acknowledged (QoS 1), or with an error if it could not be
+published: `property.publish()` settles on that call. If the client never calls
+back, `property.publish()` stays pending — when you need a bound, race it with a
+timeout. While the connection is down (not connected) it rejects right away.
+
 The examples below assume an `ArduinoIoTCloud` instance created as shown above.
 
 ### How to connect via **User Credentials**
