@@ -135,7 +135,14 @@ export class MqttTransport {
 
     // Own the reconnect loop once established. mqtt's own loop is disabled
     // (reconnectPeriod: 0) so we can refresh credentials before re-authing.
-    client.on('close', () => this.scheduleReconnect());
+    // End the dead client right away: mqtt only fails in-flight QoS 1 publishes
+    // when the client is ended, so waiting for openClient() would leave them
+    // pending through the backoff and any failing credentials fetch.
+    client.once('close', () => {
+      client.end(true);
+      if (this.client === client) this.client = undefined;
+      this.scheduleReconnect();
+    });
   }
 
   private waitForConnect(client: MqttClient): Promise<void> {
