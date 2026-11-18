@@ -7,10 +7,12 @@ type PublishCall = { topic: string; message: Buffer; opts: object; callback?: Mq
 
 /**
  * Minimal fake client that records publishes and lets the test settle them.
- * Like mqtt with `reconnectPeriod: 0` and a clean session, `end(true)` fails
- * the publishes still waiting for their ack.
+ * By default `end()` fails the publishes still waiting for their ack, like mqtt
+ * with `reconnectPeriod: 0` and a clean session; `flushOnEnd: false` models a
+ * custom client that only calls back on the ack, `endThrows` one whose `end()`
+ * throws on a dead connection.
  */
-function fakeClient() {
+function fakeClient({ flushOnEnd = true, endThrows = false } = {}) {
   const calls: PublishCall[] = [];
   const handlers = new Map<string, MqttCallback[]>();
   const listen = (event: string, cb: MqttCallback) => handlers.set(event, [...(handlers.get(event) ?? []), cb]);
@@ -29,7 +31,8 @@ function fakeClient() {
       return client;
     },
     end: () => {
-      calls.splice(0).forEach((call) => call.callback?.(new Error('Connection closed')));
+      if (endThrows) throw new Error('not connected');
+      if (flushOnEnd) calls.splice(0).forEach((call) => call.callback?.(new Error('Connection closed')));
       return client;
     },
     subscribe: () => client,
@@ -116,9 +119,45 @@ describe('MqttTransport.publish', () => {
     expect(calls).toHaveLength(1);
     drop();
 
-    await expect(result).rejects.toThrow('Connection closed');
+    await expect(result).rejects.toThrow('publish failed: connection closed');
     expect(credentials).toHaveBeenCalledTimes(1);
     transport.end();
+  });
+
+  it('rejects a publish in flight at a drop even if the client never calls back', async () => {
+    const { client, calls, drop } = fakeClient({ flushOnEnd: false });
+    const transport = new MqttTransport(
+      'wss://example',
+      () => Promise.resolve({ username: 'u', password: 'p' }),
+      () => client
+    );
+    await transport.connect();
+
+    const result = transport.publish('topic', Buffer.from('x'));
+    expect(calls).toHaveLength(1);
+    drop();
+
+    await expect(result).rejects.toThrow('publish failed: connection closed');
+    transport.end();
+  });
+
+  it('reports a throwing end() at a drop and still reconnects', async () => {
+    vi.useFakeTimers();
+    try {
+      const { client, drop } = fakeClient({ endThrows: true });
+      const credentials = vi.fn().mockResolvedValue({ username: 'u', password: 'p' });
+      const onError = vi.fn();
+      const transport = new MqttTransport('wss://example', credentials, () => client, onError);
+      await transport.connect();
+
+      drop();
+      expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: 'not connected' }));
+
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(credentials).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('stays pending until the client calls back', async () => {

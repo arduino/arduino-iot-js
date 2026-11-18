@@ -125,7 +125,8 @@ Your client's `publish` must call the `callback` it receives (the last argument)
 once the message is acknowledged (QoS 1), or with an error if it could not be
 published: `property.publish()` settles on that call. If the client never calls
 back, `property.publish()` stays pending — when you need a bound, race it with a
-timeout. While the connection is down (not connected) it rejects right away.
+timeout. While the connection is down (not connected) it rejects right away, and
+a publish still waiting for its ack when the client emits `close` rejects then.
 
 The examples below assume an `ArduinoIoTCloud` instance created as shown above.
 

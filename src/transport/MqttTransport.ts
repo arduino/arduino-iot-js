@@ -45,6 +45,8 @@ export class MqttTransport {
   // reconnect (and the credential refresh that comes with it).
   private readonly listeners = new Map<string, Set<MqttCallback>>();
   private readonly topics = new Set<string>();
+  /** Rejecters of the publishes still waiting for their ack, failed when the socket closes. */
+  private readonly inFlight = new Set<(error: Error) => void>();
 
   constructor(
     private readonly url: string,
@@ -76,8 +78,9 @@ export class MqttTransport {
    * Publish at QoS 1. Resolves when the client reports the publish outcome
    * through its callback (the broker's ack), and rejects with the client's
    * error, or immediately when there is no connected client (socket down between a
-   * drop and the next successful reconnect). It stays pending if the client never
-   * calls back — callers that need a bound should race it with a timeout.
+   * drop and the next successful reconnect). A publish still waiting for its ack
+   * when the socket closes rejects at once. Otherwise it stays pending if the
+   * client never calls back — callers that need a bound should race it with a timeout.
    * TODO: Buffering outbound messages across reconnects as a future improvement.
    */
   public publish(topic: string, message: Buffer): Promise<void> {
@@ -85,7 +88,9 @@ export class MqttTransport {
     if (!client?.connected) return Promise.reject(new Error('publish failed: no connection found'));
 
     return new Promise<void>((resolve, reject) => {
+      this.inFlight.add(reject);
       client.publish(topic, message, { qos: 1, retain: false }, (error?: Error) => {
+        this.inFlight.delete(reject);
         if (!error) resolve();
         else reject(error);
       });
@@ -135,13 +140,21 @@ export class MqttTransport {
 
     // Own the reconnect loop once established. mqtt's own loop is disabled
     // (reconnectPeriod: 0) so we can refresh credentials before re-authing.
-    // End the dead client right away: mqtt only fails in-flight QoS 1 publishes
-    // when the client is ended, so waiting for openClient() would leave them
-    // pending through the backoff and any failing credentials fetch.
+    // On a drop, fail the publishes still waiting for their ack right away,
+    // whatever the client does with them, rather than leaving them pending
+    // through the backoff and any failing credentials fetch. Then release the
+    // dead client; a throwing end() must not stop the reconnect.
     client.once('close', () => {
-      client.end(true);
       if (this.client === client) this.client = undefined;
+      const inFlight = [...this.inFlight];
+      this.inFlight.clear();
+      inFlight.forEach((reject) => reject(new Error('publish failed: connection closed')));
       this.scheduleReconnect();
+      try {
+        client.end(true);
+      } catch (error) {
+        this.onError?.(error);
+      }
     });
   }
 
