@@ -85,9 +85,8 @@ export class MqttTransport {
     if (!client?.connected) return Promise.reject(new Error('publish failed: no connection found'));
 
     return new Promise<void>((resolve, reject) => {
-      client.publish(topic, message, { qos: 1, retain: false }, (error?: unknown) => {
+      client.publish(topic, message, { qos: 1, retain: false }, (error?: Error) => {
         if (!error) resolve();
-        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- hand the client's error through as is
         else reject(error);
       });
     });
