@@ -35,7 +35,7 @@ export type {
 } from './types/options';
 export type { MqttConnectFn } from './transport/MqttTransport';
 export type { CloudMessage, CloudMessageValue, MqttOptions } from './transport/types';
-export type { MqttClient } from './mqtt/MqttClient';
+export type { MqttClient, MqttPublishCallback } from './mqtt/MqttClient';
 export type { ActiveConnection } from './connection/ActiveConnection';
 export type { UserConnection } from './connection/UserConnection';
 export type { DeviceConnection } from './connection/DeviceConnection';

@@ -93,7 +93,6 @@ export abstract class ActiveConnection {
 
     const values = SenML.parse(name, value, timestamp, this.options.useCloudProtocolV2 ?? false, null);
     const message = SenML.CBOR.encode(Utils.isArray(values) ? values : [values], this.options.useCloudProtocolV2);
-    this.transport.publish(topic, Utils.toBuffer(message));
-    return Promise.resolve();
+    return this.transport.publish(topic, Utils.toBuffer(message));
   }
 }
