@@ -6,9 +6,8 @@
       "release-type": "node",
       "package-name": "arduino-iot-js",
       "changelog-path": "CHANGELOG.md",
-      "include-v-in-tag": true,
-      "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": true
+      "include-v-in-tag": false,
+      "include-component-in-tag": false
     }
   }
 }
