@@ -45,6 +45,8 @@ export class MqttTransport {
   // reconnect (and the credential refresh that comes with it).
   private readonly listeners = new Map<string, Set<MqttCallback>>();
   private readonly topics = new Set<string>();
+  /** Rejecters of the publishes still waiting for their ack, failed when the socket closes. */
+  private readonly inFlight = new Set<(error: Error) => void>();
 
   constructor(
     private readonly url: string,
@@ -73,13 +75,26 @@ export class MqttTransport {
   }
 
   /**
-   * Fire-and-forget publish. NOTE: a message published while the socket is down
-   * (between a drop and the next successful reconnect) is silently lost — there
-   * is no client to hand it to.
+   * Publish at QoS 1. Resolves when the client reports the publish outcome
+   * through its callback (the broker's ack), and rejects with the client's
+   * error, or immediately when there is no connected client (socket down between a
+   * drop and the next successful reconnect). A publish still waiting for its ack
+   * when the socket closes rejects at once. Otherwise it stays pending if the
+   * client never calls back — callers that need a bound should race it with a timeout.
    * TODO: Buffering outbound messages across reconnects as a future improvement.
    */
-  public publish(topic: string, message: Buffer): void {
-    this.client?.publish(topic, message, { qos: 1, retain: false });
+  public publish(topic: string, message: Buffer): Promise<void> {
+    const client = this.client;
+    if (!client?.connected) return Promise.reject(new Error('publish failed: no connection found'));
+
+    return new Promise<void>((resolve, reject) => {
+      this.inFlight.add(reject);
+      client.publish(topic, message, { qos: 1, retain: false }, (error?: Error) => {
+        this.inFlight.delete(reject);
+        if (!error) resolve();
+        else reject(error);
+      });
+    });
   }
 
   public subscribe(topic: string): void {
@@ -125,7 +140,22 @@ export class MqttTransport {
 
     // Own the reconnect loop once established. mqtt's own loop is disabled
     // (reconnectPeriod: 0) so we can refresh credentials before re-authing.
-    client.on('close', () => this.scheduleReconnect());
+    // On a drop, fail the publishes still waiting for their ack right away,
+    // whatever the client does with them, rather than leaving them pending
+    // through the backoff and any failing credentials fetch. Then release the
+    // dead client; a throwing end() must not stop the reconnect.
+    client.once('close', () => {
+      if (this.client === client) this.client = undefined;
+      const inFlight = [...this.inFlight];
+      this.inFlight.clear();
+      inFlight.forEach((reject) => reject(new Error('publish failed: connection closed')));
+      this.scheduleReconnect();
+      try {
+        client.end(true);
+      } catch (error) {
+        this.onError?.(error);
+      }
+    });
   }
 
   private waitForConnect(client: MqttClient): Promise<void> {
