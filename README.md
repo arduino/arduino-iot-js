@@ -28,6 +28,7 @@ If you want to learn more about Arduino IoT Cloud architecture, check the offici
 Via NPM
 
 ```bash
+
 $ npm install arduino-iot-js
 ```
 
